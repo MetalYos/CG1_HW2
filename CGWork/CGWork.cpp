@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(CCGWorkApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+//	ON_COMMAND(ID_BUTTON_COLORS, &CCGWorkApp::OnButtonColors)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -110,6 +111,10 @@ protected:
 	//{{AFX_MSG(CAboutDlg)
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+//	afx_msg void OnButtonColors();
+//	afx_msg void OnUpdateButtonColors(CCmdUI *pCmdUI);
+//	afx_msg void OnButtonColors();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -128,6 +133,9 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
 	//}}AFX_MSG_MAP
+//	ON_COMMAND(ID_BUTTON_COLORS, &CAboutDlg::OnButtonColors)
+//	ON_UPDATE_COMMAND_UI(ID_BUTTON_COLORS, &CAboutDlg::OnUpdateButtonColors)
+//	ON_COMMAND(ID_BUTTON_COLORS, &CAboutDlg::OnButtonColors)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
@@ -137,3 +145,10 @@ void CCGWorkApp::OnAppAbout()
 	aboutDlg.DoModal();
 }
 
+
+
+
+//void CCGWorkApp::OnButtonColors()
+//{
+//	// TODO: Add your command handler code here
+//}

@@ -77,8 +77,8 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_POLY_NORM, &CCGWorkView::OnUpdateButtonPolyNorm)
 	ON_COMMAND(ID_NORMAL_CALCULATED, &CCGWorkView::OnNormalCalculated)
 	ON_UPDATE_COMMAND_UI(ID_NORMAL_CALCULATED, &CCGWorkView::OnUpdateNormalCalculated)
+	ON_COMMAND(ID_BUTTON_COLORS, &CCGWorkView::OnButtonColors)
 END_MESSAGE_MAP()
-
 
 // A patch to fix GLaux disappearance from VS2005 to VS2008
 void auxSolidCone(GLdouble radius, GLdouble height) {
@@ -113,6 +113,7 @@ CCGWorkView::CCGWorkView()
 
 	isFirstDraw = true;
 	isBBoxOn = false;
+	
 }
 
 CCGWorkView::~CCGWorkView()
@@ -922,6 +923,7 @@ void CCGWorkView::OnUpdateButtonPolyNorm(CCmdUI *pCmdUI)
 }
 
 
+
 void CCGWorkView::OnNormalCalculated()
 {
 	// TODO: Add your command handler code here
@@ -938,5 +940,13 @@ void CCGWorkView::OnUpdateNormalCalculated(CCmdUI *pCmdUI)
 	{
 		pMenu->CheckMenuItem(ID_NORMAL_CALCULATED, MF_CHECKED | MF_BYCOMMAND);
 		pMenu->CheckMenuItem(ID_NORMAL_FROMFILE, MF_UNCHECKED | MF_BYCOMMAND);
+	}
+}
+
+void CCGWorkView::OnButtonColors()
+{
+	if (m_colorDialog.DoModal() == IDOK)
+	{
+		Invalidate();
 	}
 }

@@ -17,7 +17,7 @@
 #include "Light.h"
 
 #include <vector>
-
+#include "CColorsDialog.h"
 class CCGWorkView : public CView
 {
 protected: // create from serialization only
@@ -62,6 +62,8 @@ private:
 	CPoint TranslatePointFrom8th(CPoint p, int oct);
 	CPoint TranslatePointTo8th(CPoint p, int oct);
 
+	//Dialogs
+	CColorsDialog m_colorDialog; 
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -147,9 +149,9 @@ public:
 	afx_msg void OnUpdateButtonVertNorm(CCmdUI *pCmdUI);
 	afx_msg void OnButtonPolyNorm();
 	afx_msg void OnUpdateButtonPolyNorm(CCmdUI *pCmdUI);
+	afx_msg void OnButtonColors();
 	afx_msg void OnNormalCalculated();
-	afx_msg void OnUpdateNormalCalculated(CCmdUI *pCmdUI);
-};
+	afx_msg void OnUpdateNormalCalculated(CCmdUI *pCmdUI);};
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp
 inline CCGWorkDoc* CCGWorkView::GetDocument()

@@ -65,8 +65,6 @@ BEGIN
     SEPARATOR
     BUTTON      ID_BUTTON_POLY_NORM
     BUTTON      ID_BUTTON_VERT_NORM
-    SEPARATOR
-    BUTTON      ID_BUTTON_COLORS
 END
 
 
@@ -242,6 +240,22 @@ BEGIN
     GROUPBOX        "Texture Mapping",IDC_STATIC,118,7,182,91
 END
 
+IDD_COLOR_DLG DIALOGEX 0, 0, 287, 105
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,175,84,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,230,84,50,14
+    PUSHBUTTON      "",IDC_WIREFRAME_COLOR_BUTTON,38,37,50,14
+    PUSHBUTTON      "",IDC_NORMAL_COLOR_BUTTON,124,36,50,14
+    PUSHBUTTON      "",IDC_BACKGROUND_COLOR_BUTTON,209,36,50,14
+    LTEXT           "Wireframe Color",IDC_STATIC,36,24,53,8
+    LTEXT           "Background Color",IDC_STATIC,205,23,57,8
+    LTEXT           "Normal Color",IDC_STATIC,129,26,42,8
+    CONTROL         "Disco Mode",IDC_IS_DISCO_CHECKBOX,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,38,74,52,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -312,6 +326,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 131
     END
+
+    IDD_COLOR_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 98
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -333,6 +355,17 @@ BEGIN
 0x6956, 0x7765, "\000" 
     IDC_LIGHT_SPACE, 0x403, 6, 0
 0x6f4c, 0x6163, 0x006c, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_COLOR_DLG AFX_DIALOG_LAYOUT
+BEGIN
     0
 END
 
