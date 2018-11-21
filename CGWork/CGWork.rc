@@ -87,9 +87,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Orthographic",               ID_VIEW_ORTHOGRAPHIC
         MENUITEM "&Perspective",                ID_VIEW_PERSPECTIVE
-        POPUP "Normal"
+        POPUP "&Normal"
         BEGIN
-            MENUITEM "Calculated",                  ID_NORMAL_CALCULATED
+            MENUITEM "Calculated",                  ID_NORMAL_CALCULATED, CHECKED
             MENUITEM "From File",                   ID_NORMAL_FROMFILE
         END
     END
@@ -496,6 +496,12 @@ END
 STRINGTABLE
 BEGIN
     ID_BUTTON_SUBDIVIDE     "Run Subdivision Scheme\nSubdivide"
+END
+
+STRINGTABLE
+BEGIN
+    ID_BUTTON_VIEW          "View Space"
+    ID_BUTTON_OBJECT        "Object Space"
 END
 
 #endif    // English (United States) resources

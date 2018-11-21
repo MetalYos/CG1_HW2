@@ -11,7 +11,7 @@ Model::~Model()
 	}
 
 	// free bounding box vertices
-	while (geos.size() > 0)
+	while (bbox.size() > 0)
 	{
 		Poly* p = bbox.back();
 		bbox.pop_back();

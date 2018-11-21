@@ -49,6 +49,11 @@ private:
 	LightParams m_lights[MAX_LIGHT];	//configurable lights array
 	LightParams m_ambientLight;		//ambient light (only RGB is used)
 
+	int m_nCoordSpace;		// The selected Coord space to perform transformations in
+
+	// Orthographic projection height
+	double orthoHeight;
+
 	// Mouse pos
 	CPoint prevMousePos;
 
@@ -151,7 +156,12 @@ public:
 	afx_msg void OnUpdateButtonPolyNorm(CCmdUI *pCmdUI);
 	afx_msg void OnButtonColors();
 	afx_msg void OnNormalCalculated();
-	afx_msg void OnUpdateNormalCalculated(CCmdUI *pCmdUI);};
+	afx_msg void OnNormalFromfile();
+	afx_msg void OnButtonView();
+	afx_msg void OnUpdateButtonView(CCmdUI *pCmdUI);
+	afx_msg void OnButtonObject();
+	afx_msg void OnUpdateButtonObject(CCmdUI *pCmdUI);
+};
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp
 inline CCGWorkDoc* CCGWorkView::GetDocument()

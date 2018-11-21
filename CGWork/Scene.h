@@ -13,7 +13,6 @@ private:
 	//std::vector<Geometry*> geos;
 
 	bool isCalcNormal;
-
 	Vec4 bgColor;
 
 	Scene();

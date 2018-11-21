@@ -9,8 +9,12 @@ Scene::Scene() : camera(new Camera()), isCalcNormal(true), bgColor((AL_BLACK))
 
 Scene::~Scene()
 {
-	for (Model* m : models)
-		delete m;
+	while (models.size() > 0)
+	{
+		Model* model = models.back();
+		models.pop_back();
+		delete model;
+	}
 	delete camera;
 }
 

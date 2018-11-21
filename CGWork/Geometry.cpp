@@ -3,11 +3,17 @@
 Geometry::~Geometry()
 {
 	// free polygons
-	for (Poly* p : Polygons)
+	while (Polygons.size() > 0)
+	{
+		Poly* p = Polygons.back();
+		Polygons.pop_back();
 		delete p;
+	}
+
 	// free vertices
 	for (auto it = Vertices.begin(); it != Vertices.end(); ++it)
 		delete (*it).second;
+	Vertices.clear();
 }
 
 void Geometry::AddVertex(Vertex* v)

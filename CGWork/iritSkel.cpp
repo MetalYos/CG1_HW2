@@ -139,9 +139,9 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 	if (CGSkelGetObjectColor(PObj, RGB))
 	{
 		/* color code */
-		color[0] = RGB[0];
-		color[1] = RGB[1];
-		color[2] = RGB[3];
+		color[0] = RGB[0] * 255.0;
+		color[1] = RGB[1] * 255.0;
+		color[2] = RGB[3] * 255.0;
 	}
 	if (CGSkelGetObjectTransp(PObj, &Transp))
 	{

@@ -11,6 +11,28 @@ Camera::~Camera()
 {
 }
 
+void Camera::Translate(Mat4& T)
+{
+	T[3][0] = -T[3][0];
+	T[3][1] = -T[3][1];
+	T[3][2] = -T[3][2];
+	cTransform = cTransform * T;
+}
+
+void Camera::Scale(Mat4& S)
+{
+	S[0][0] = 1.0 / S[0][0];
+	S[1][1] = 1.0 / S[1][1];
+	S[2][2] = 1.0 / S[2][2];
+	cTransform = cTransform * S;
+}
+
+void Camera::Rotate(Mat4& R)
+{
+	R.Transpose();
+	cTransform = R * cTransform; // * R;
+}
+
 Mat4 Camera::GetTranform() const
 {
 	return cTransform;
@@ -25,6 +47,13 @@ void Camera::SetOrthographic(double left, double right, double top, double botto
 	projection = result;
 	orthographic = result;
 	isPerspective = false;
+
+	orthographicParams.Left = left;
+	orthographicParams.Right = right;
+	orthographicParams.Top = top;
+	orthographicParams.Bottom = bottom;
+	orthographicParams.Near = near;
+	orthographicParams.Far = far;
 }
 
 void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z_far)
@@ -43,6 +72,11 @@ void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z
 	projection = result;
 	perspective = result;
 	isPerspective = true;
+
+	perspectiveParams.FOV = fovy;
+	perspectiveParams.AspectRatio = aspectR;
+	perspectiveParams.Near = z_near;
+	perspectiveParams.Far = z_far;
 }
 
 Mat4 Camera::GetProjection() const
@@ -50,10 +84,23 @@ Mat4 Camera::GetProjection() const
 	return projection;
 }
 
+const PerspectiveParams & Camera::GetPerspectiveParameters() const
+{
+	return perspectiveParams;
+}
+
+const OrthographicParams & Camera::GetOrthographicParameters() const
+{
+	return orthographicParams;
+}
+
 void Camera::SwitchProjection(bool isPerspective)
 {
-	projection = isPerspective ? perspective : orthographic;
-	this->isPerspective = isPerspective;
+	if (this->isPerspective != isPerspective)
+	{
+		projection = isPerspective ? perspective : orthographic;
+		this->isPerspective = isPerspective;
+	}
 }
 
 bool Camera::IsPerspective() const

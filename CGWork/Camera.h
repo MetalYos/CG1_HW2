@@ -2,6 +2,24 @@
 
 #include "ALMath.h"
 
+struct PerspectiveParams
+{
+	double FOV;
+	double AspectRatio;
+	double Near;
+	double Far;
+};
+
+struct OrthographicParams
+{
+	double Left;
+	double Right;
+	double Top;
+	double Bottom;
+	double Near;
+	double Far;
+};
+
 class Camera
 {
 private:
@@ -12,20 +30,24 @@ private:
 	Mat4 orthographic;
 	bool isPerspective;
 
+	PerspectiveParams perspectiveParams;
+	OrthographicParams orthographicParams;
+
 public:
 	Camera();
 	~Camera();
 
-	void Translate(const Mat4& T);
-	void Scale(const Mat4& S);
-	void RotateX(const Mat4& R);
-	void RotateY(const Mat4& R);
-	void RotateZ(const Mat4& R);
+	void Translate(Mat4& T);
+	void Scale(Mat4& S);
+	void Rotate(Mat4& R);
 	Mat4 GetTranform() const;
 
 	void SetOrthographic(double left, double right, double top, double bottom, double z_near, double z_far);
 	void SetPerspective(double fovy, double aspectR, double z_near, double z_far);
 	Mat4 GetProjection() const;
+
+	const PerspectiveParams& GetPerspectiveParameters() const;
+	const OrthographicParams& GetOrthographicParameters() const;
 
 	void SwitchProjection(bool isPerspective);
 	bool IsPerspective() const;

@@ -76,8 +76,12 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_COMMAND(ID_BUTTON_POLY_NORM, &CCGWorkView::OnButtonPolyNorm)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_POLY_NORM, &CCGWorkView::OnUpdateButtonPolyNorm)
 	ON_COMMAND(ID_NORMAL_CALCULATED, &CCGWorkView::OnNormalCalculated)
-	ON_UPDATE_COMMAND_UI(ID_NORMAL_CALCULATED, &CCGWorkView::OnUpdateNormalCalculated)
 	ON_COMMAND(ID_BUTTON_COLORS, &CCGWorkView::OnButtonColors)
+	ON_COMMAND(ID_NORMAL_FROMFILE, &CCGWorkView::OnNormalFromfile)
+	ON_COMMAND(ID_BUTTON_VIEW, &CCGWorkView::OnButtonView)
+	ON_UPDATE_COMMAND_UI(ID_BUTTON_VIEW, &CCGWorkView::OnUpdateButtonView)
+	ON_COMMAND(ID_BUTTON_OBJECT, &CCGWorkView::OnButtonObject)
+	ON_UPDATE_COMMAND_UI(ID_BUTTON_OBJECT, &CCGWorkView::OnUpdateButtonObject)
 END_MESSAGE_MAP()
 
 // A patch to fix GLaux disappearance from VS2005 to VS2008
@@ -113,7 +117,8 @@ CCGWorkView::CCGWorkView()
 
 	isFirstDraw = true;
 	isBBoxOn = false;
-	
+	orthoHeight = 5.0;
+	m_nCoordSpace = ID_BUTTON_VIEW;
 }
 
 CCGWorkView::~CCGWorkView()
@@ -345,6 +350,17 @@ void CCGWorkView::OnSize(UINT nType, int cx, int cy)
 	DeleteObject(m_pDbBitMap);
 	m_pDbBitMap = CreateCompatibleBitmap(m_pDC->m_hDC, r.right, r.bottom);	
 	m_pDbDC->SelectObject(m_pDbBitMap);
+
+	// Update camera projections
+	Camera* camera = Scene::GetInstance().GetCamera();
+	bool isPerspective = camera->IsPerspective();
+	OrthographicParams oParams = camera->GetOrthographicParameters();
+	PerspectiveParams pParams = camera->GetPerspectiveParameters();
+	camera->SetPerspective(pParams.FOV, m_AspectRatio, pParams.Near, pParams.Far);
+	double width = m_AspectRatio * orthoHeight;
+	Scene::GetInstance().GetCamera()->SetOrthographic(-width / 2.0,
+		width / 2.0, orthoHeight / 2.0, -orthoHeight / 2.0, oParams.Near, oParams.Far);
+	camera->SwitchProjection(isPerspective);
 }
 
 
@@ -397,12 +413,11 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		m_WindowWidth = r.Width();
 		m_WindowHeight = r.Height();
 		m_AspectRatio = m_WindowWidth / m_WindowHeight;
-		double height = 5;
-		double width = 5 * m_AspectRatio;
+		double width = orthoHeight * m_AspectRatio;
 		
 		Scene::GetInstance().GetCamera()->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
 		Scene::GetInstance().GetCamera()->SetOrthographic(-width / 2.0,
-			width / 2.0, height / 2.0, -height / 2.0, 1, 1000.0);
+			width / 2.0, orthoHeight / 2.0, -orthoHeight / 2.0, 1, 1000.0);
 		isFirstDraw = false;
 	}
 	
@@ -445,7 +460,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 			{
 				std::vector<Edge> poly;
 				Vec4 polyCenter;
-				for (int i = 0; i < p->Vertices.size(); i++)
+				for (unsigned int i = 0; i < p->Vertices.size(); i++)
 				{
 					// Add edge to poly struct
 					Vec4 pos1 = p->Vertices[i]->Pos;
@@ -460,19 +475,20 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					Vec4 pix1Vec(clipped1 * toView);
 					Vec4 pix2Vec(clipped2 * toView);
 
-					CPoint pix1(pix1Vec[0], pix1Vec[1]);
-					CPoint pix2(pix2Vec[0], pix2Vec[1]);
+					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
+					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
 					poly.push_back({ pix1, pix2 , AL_RAINBOW_CREF });
 
 					// Draw vertex normal if needed
 					if (model->AreVertexNormalsOn())
 					{
-						Vec4 nPos2 = pos1 + p->Vertices[i]->Normal * 0.5;
-						Vec4 nClipped2 = nPos2 * transform * camTransform * projection;
-						nClipped2 /= nClipped2[3];
-						Vec4 nPix2Vec(nClipped2 * toView);
-						CPoint nPix2(nPix2Vec[0], nPix2Vec[1]);
+						Vec4 normal = Scene::GetInstance().GetCalcNormalState() ?
+							p->Vertices[i]->CalcNormal : p->Vertices[i]->Normal;
+						normal = pos1 + p->Vertices[i]->Normal * 0.3;
+						normal = normal * transform * camTransform * projection;
+						normal = normal * toView;
+						CPoint nPix2((int)normal[0], (int)normal[1]);
 
 						DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), pix1, nPix2);
 					}
@@ -486,19 +502,20 @@ void CCGWorkView::OnDraw(CDC* pDC)
 				// Draw poly normal if needed
 				if (model->ArePolyNormalsOn())
 				{
-					Vec4 polyNorm = polyCenter - p->Normal * 0.5;
+					Vec4 normal = Scene::GetInstance().GetCalcNormalState() ?
+						p->CalcNormal : p->Normal;
+					normal = polyCenter + p->Normal * 0.3;
 
 					polyCenter = polyCenter * transform * camTransform * projection;
-					polyNorm = polyNorm * transform * camTransform * projection;
+					normal = normal * transform * camTransform * projection;
 
 					polyCenter /= polyCenter[3];
-					polyNorm /= polyNorm[3];
 
 					polyCenter = polyCenter * toView;
-					polyNorm = polyNorm * toView;
+					normal = normal * toView;
 
-					CPoint polyCenterPix(polyCenter[0], polyCenter[1]);
-					CPoint polyNormPix(polyNorm[0], polyNorm[1]);
+					CPoint polyCenterPix((int)polyCenter[0], (int)polyCenter[1]);
+					CPoint polyNormPix((int)normal[0], (int)normal[1]);
 
 					DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), polyCenterPix, polyNormPix);
 				}
@@ -512,7 +529,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 			for (Poly* p : polygons)
 			{
 				std::vector<Edge> poly;
-				for (int i = 0; i < p->Vertices.size(); i++)
+				for (unsigned int i = 0; i < p->Vertices.size(); i++)
 				{
 					Vec4 pos1 = p->Vertices[i]->Pos;
 					Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
@@ -526,8 +543,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					Vec4 pix1Vec(clipped1 * toView);
 					Vec4 pix2Vec(clipped2 * toView);
 
-					CPoint pix1(pix1Vec[0], pix1Vec[1]);
-					CPoint pix2(pix2Vec[0], pix2Vec[1]);
+					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
+					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
 					poly.push_back({ pix1, pix2 , RGB((BYTE)rand() % 255, (BYTE)rand() % 255, (BYTE)rand() % 255) });
 				}
@@ -803,50 +820,78 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 			return;
 		
 		Model* model = Scene::GetInstance().GetModels().back();
+		Camera* camera = Scene::GetInstance().GetCamera();
 
 		if (m_nAction == ID_ACTION_TRANSLATE)
 		{
 			if (m_nAxis == ID_AXIS_X)
 			{
-				model->SetTranform(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
+				else
+					camera->Translate(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
 			}
 			if (m_nAxis == ID_AXIS_Y)
 			{
-				model->SetTranform(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
+				else
+					camera->Translate(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
 			}
 			if (m_nAxis == ID_AXIS_Z)
 			{
-				model->SetTranform(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
+				else
+					camera->Translate(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
 			}
 		}
 		else if (m_nAction == ID_ACTION_ROTATE)
 		{
 			if (m_nAxis == ID_AXIS_X)
 			{
-				model->SetTranform(Mat4::RotateX(dx / sensitivity[1]));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::RotateX(dx / sensitivity[1]));
+				else
+					camera->Rotate(Mat4::RotateX(dx / sensitivity[1]));
 			}
 			if (m_nAxis == ID_AXIS_Y)
 			{
-				model->SetTranform(Mat4::RotateY(dx / sensitivity[1]));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::RotateY(dx / sensitivity[1]));
+				else
+					camera->Rotate(Mat4::RotateY(dx / sensitivity[1]));
 			}
 			if (m_nAxis == ID_AXIS_Z)
 			{
-				model->SetTranform(Mat4::RotateZ(dx / sensitivity[1]));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::RotateZ(dx / sensitivity[1]));
+				else
+					camera->Rotate(Mat4::RotateZ(dx / sensitivity[1]));
 			}
 		}
 		else
 		{
 			if (m_nAxis == ID_AXIS_X)
 			{
-				model->SetTranform(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
+				else
+					camera->Scale(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
 			}
 			if (m_nAxis == ID_AXIS_Y)
 			{
-				model->SetTranform(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
+				else
+					camera->Scale(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
 			}
 			if (m_nAxis == ID_AXIS_Z)
 			{
-				model->SetTranform(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->SetTranform(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
+				else
+					camera->Scale(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
 			}
 		}
 	}
@@ -860,7 +905,6 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 
 void CCGWorkView::OnButtonBbox()
 {
-	// TODO: Add your command handler code here
 	isBBoxOn = !isBBoxOn;
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
@@ -880,7 +924,6 @@ void CCGWorkView::OnUpdateButtonBbox(CCmdUI *pCmdUI)
 
 void CCGWorkView::OnButtonVertNorm()
 {
-	// TODO: Add your command handler code here
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 
@@ -902,7 +945,6 @@ void CCGWorkView::OnUpdateButtonVertNorm(CCmdUI *pCmdUI)
 
 void CCGWorkView::OnButtonPolyNorm()
 {
-	// TODO: Add your command handler code here
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 
@@ -914,7 +956,6 @@ void CCGWorkView::OnButtonPolyNorm()
 
 void CCGWorkView::OnUpdateButtonPolyNorm(CCmdUI *pCmdUI)
 {
-	// TODO: Add your command update UI handler code here
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 
@@ -926,14 +967,8 @@ void CCGWorkView::OnUpdateButtonPolyNorm(CCmdUI *pCmdUI)
 
 void CCGWorkView::OnNormalCalculated()
 {
-	// TODO: Add your command handler code here
-	Scene::GetInstance().SetCalcNormalState(!Scene::GetInstance().GetCalcNormalState());
-}
+	Scene::GetInstance().SetCalcNormalState(true);
 
-
-void CCGWorkView::OnUpdateNormalCalculated(CCmdUI *pCmdUI)
-{
-	// TODO: Add your command update UI handler code here
 	CWnd* pParent = GetParent();
 	CMenu* pMenu = pParent->GetMenu();
 	if (pMenu != NULL)
@@ -943,10 +978,47 @@ void CCGWorkView::OnUpdateNormalCalculated(CCmdUI *pCmdUI)
 	}
 }
 
+void CCGWorkView::OnNormalFromfile()
+{
+	Scene::GetInstance().SetCalcNormalState(false);
+
+	CWnd* pParent = GetParent();
+	CMenu* pMenu = pParent->GetMenu();
+	if (pMenu != NULL)
+	{
+		pMenu->CheckMenuItem(ID_NORMAL_CALCULATED, MF_UNCHECKED | MF_BYCOMMAND);
+		pMenu->CheckMenuItem(ID_NORMAL_FROMFILE, MF_CHECKED | MF_BYCOMMAND);
+	}
+}
+
 void CCGWorkView::OnButtonColors()
 {
 	if (m_colorDialog.DoModal() == IDOK)
 	{
 		Invalidate();
 	}
+}
+
+
+void CCGWorkView::OnButtonView()
+{
+	m_nCoordSpace = ID_BUTTON_VIEW;
+}
+
+
+void CCGWorkView::OnUpdateButtonView(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(m_nCoordSpace == ID_BUTTON_VIEW);
+}
+
+
+void CCGWorkView::OnButtonObject()
+{
+	m_nCoordSpace = ID_BUTTON_OBJECT;
+}
+
+
+void CCGWorkView::OnUpdateButtonObject(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(m_nCoordSpace == ID_BUTTON_OBJECT);
 }
