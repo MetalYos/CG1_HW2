@@ -76,6 +76,21 @@ const Vec4 & Model::GetColor() const
 	return color;
 }
 
+void Model::SetNormalColor(int r, int g, int b)
+{
+	normalColor = Vec4(r, g, b);
+}
+
+void Model::SetNormalColor(const Vec4 & color)
+{
+	normalColor = color;
+}
+
+const Vec4 & Model::GetNormalColor() const
+{
+	return normalColor;
+}
+
 void Model::SetBBox(bool isBBoxOn)
 {
 	this->isBBoxOn = isBBoxOn;

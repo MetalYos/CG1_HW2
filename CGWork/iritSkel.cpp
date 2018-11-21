@@ -205,36 +205,37 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 					v->Normal = Vec4::Normalize3(Vec4(PVertex->Normal[0], PVertex->Normal[1], PVertex->Normal[2], 0.0));
 				}
 
+
 				if (!vertExists)
 				{
 					// Add Vertex to Geometry
 					geo->AddVertex(v);
 				}
 
-				// Save polygon normal
-				if (IP_HAS_PLANE_POLY(PPolygon))
-				{
-					p->Normal = Vec4::Normalize3(Vec4(PPolygon->Plane[0], PPolygon->Plane[1], PPolygon->Plane[2], 0.0));
-				}
-				// Calculate polygon normal
-				if (i >= 3)
-				{
-					Vec4 u = p->Vertices[0]->Pos;
-					Vec4 v = p->Vertices[1]->Pos;
-					Vec4 w = p->Vertices[2]->Pos;
-
-					p->CalcNormal = Vec4::Normalize3(Vec4::Cross(u - v, v - w));
-					p->CalcNormal[3] = 0.0;
-				}
-				else
-				{
-					p->CalcNormal = Vec4::Normalize3(Vec4(1.0, 1.0, 1.0, 0.0));
-				}
-
 				PVertex = PVertex -> Pnext;
 			}
 			while (PVertex != PPolygon -> PVertex && PVertex != NULL);
 			/* Close the polygon. */
+
+			// Save polygon normal
+			if (IP_HAS_PLANE_POLY(PPolygon))
+			{
+				p->Normal = Vec4::Normalize3(Vec4(PPolygon->Plane[0], PPolygon->Plane[1], PPolygon->Plane[2], 0.0));
+			}
+			// Calculate polygon normal
+			if (i >= 3)
+			{
+				Vec4 u = p->Vertices[0]->Pos;
+				Vec4 v = p->Vertices[1]->Pos;
+				Vec4 w = p->Vertices[2]->Pos;
+
+				p->CalcNormal = Vec4::Normalize3(Vec4::Cross(u - v, v - w));
+				p->CalcNormal[3] = 0.0;
+			}
+			else
+			{
+				p->CalcNormal = Vec4::Normalize3(Vec4(1.0, 1.0, 1.0, 0.0));
+			}
 
 			// Add Polygon to Geometry
 			geo->AddPolygon(p);

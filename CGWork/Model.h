@@ -9,6 +9,7 @@ private:
 	std::vector<Geometry*> geos;
 	Mat4 transform;
 	Vec4 color;
+	Vec4 normalColor;
 
 	// BBox parameters
 	bool isBBoxOn;
@@ -21,7 +22,8 @@ private:
 	bool polyNormals;
 
 public:
-	Model() : color(AL_WHITE), isBBoxOn(false), vertexNormals(false), polyNormals(false) { }
+	Model() : color(AL_WHITE), isBBoxOn(false), vertexNormals(false), polyNormals(false),
+			normalColor(AL_RED) { }
 	~Model();
 
 	void AddGeometry(Geometry* geo);
@@ -34,6 +36,10 @@ public:
 	void SetColor(int r, int g, int b);
 	void SetColor(const Vec4& color);
 	const Vec4& GetColor() const;
+
+	void SetNormalColor(int r, int g, int b);
+	void SetNormalColor(const Vec4& color);
+	const Vec4& GetNormalColor() const;
 
 	void SetBBox(bool isBBoxOn);
 	bool IsBBoxOn() const;

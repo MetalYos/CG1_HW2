@@ -5,6 +5,9 @@ CGWork/Release/
 # .vs folder
 CGWork/.vs/
 
+# debugging
+*.pdb
+
 # Prerequisites
 *.d
 

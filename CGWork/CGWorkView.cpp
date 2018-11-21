@@ -75,6 +75,8 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_VERT_NORM, &CCGWorkView::OnUpdateButtonVertNorm)
 	ON_COMMAND(ID_BUTTON_POLY_NORM, &CCGWorkView::OnButtonPolyNorm)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_POLY_NORM, &CCGWorkView::OnUpdateButtonPolyNorm)
+	ON_COMMAND(ID_NORMAL_CALCULATED, &CCGWorkView::OnNormalCalculated)
+	ON_UPDATE_COMMAND_UI(ID_NORMAL_CALCULATED, &CCGWorkView::OnUpdateNormalCalculated)
 END_MESSAGE_MAP()
 
 
@@ -403,7 +405,20 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		isFirstDraw = false;
 	}
 	
-	pDCToUse->FillSolidRect(&r, RGB(0, 0, 0));
+	Vec4 bgColor = Scene::GetInstance().GetBackgroundColor();
+	COLORREF bGColorRef = RGB((int)bgColor[0], (int)bgColor[1], (int)bgColor[2]);
+	pDCToUse->FillSolidRect(&r, bGColorRef);
+	/*
+	Vec4 bgColor = Scene::GetInstance().GetBackgroundColor();
+	COLORREF bGColorRef = RGB((int)bgColor[0], (int)bgColor[1], (int)bgColor[2]);
+	for (int x = r.left; x < r.right; x++)
+	{
+		for (int y = r.top; y < r.bottom; y++)
+		{
+			pDCToUse->SetPixel(x, y, bGColorRef);
+		}
+	}
+	*/
 	
 	std::vector<Model*> models = Scene::GetInstance().GetModels();
 	Camera* camera = Scene::GetInstance().GetCamera();
@@ -420,6 +435,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	{
 		Mat4 transform = model->GetTransform();
 		Vec4 color = model->GetColor();
+		Vec4 normalColor = model->GetNormalColor();
 		for (Geometry* geo : model->GetGeometries())
 		{
 			// Draw Polys
@@ -427,6 +443,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 			for (Poly* p : polygons)
 			{
 				std::vector<Edge> poly;
+				Vec4 polyCenter;
 				for (int i = 0; i < p->Vertices.size(); i++)
 				{
 					// Add edge to poly struct
@@ -445,17 +462,45 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix1(pix1Vec[0], pix1Vec[1]);
 					CPoint pix2(pix2Vec[0], pix2Vec[1]);
 
-					poly.push_back({ pix1, pix2 , RGB((BYTE)rand() % 255, (BYTE)rand() % 255, (BYTE)rand() % 255) });
+					poly.push_back({ pix1, pix2 , AL_RAINBOW_CREF });
 
 					// Draw vertex normal if needed
 					if (model->AreVertexNormalsOn())
 					{
-						Vec4 nPos2 = pos1 + p->Vertices[i]->Normal;
+						Vec4 nPos2 = pos1 + p->Vertices[i]->Normal * 0.5;
+						Vec4 nClipped2 = nPos2 * transform * camTransform * projection;
+						nClipped2 /= nClipped2[3];
+						Vec4 nPix2Vec(nClipped2 * toView);
+						CPoint nPix2(nPix2Vec[0], nPix2Vec[1]);
 
+						DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), pix1, nPix2);
 					}
+
+					polyCenter += pos1;
 				}
+				polyCenter /= p->Vertices.size();
 
 				DrawPoly(pDCToUse, poly);
+
+				// Draw poly normal if needed
+				if (model->ArePolyNormalsOn())
+				{
+					Vec4 polyNorm = polyCenter - p->Normal * 0.5;
+
+					polyCenter = polyCenter * transform * camTransform * projection;
+					polyNorm = polyNorm * transform * camTransform * projection;
+
+					polyCenter /= polyCenter[3];
+					polyNorm /= polyNorm[3];
+
+					polyCenter = polyCenter * toView;
+					polyNorm = polyNorm * toView;
+
+					CPoint polyCenterPix(polyCenter[0], polyCenter[1]);
+					CPoint polyNormPix(polyNorm[0], polyNorm[1]);
+
+					DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), polyCenterPix, polyNormPix);
+				}
 			}
 		}
 
@@ -874,4 +919,24 @@ void CCGWorkView::OnUpdateButtonPolyNorm(CCmdUI *pCmdUI)
 
 	Model* model = Scene::GetInstance().GetModels().back();
 	pCmdUI->SetCheck(model->ArePolyNormalsOn());
+}
+
+
+void CCGWorkView::OnNormalCalculated()
+{
+	// TODO: Add your command handler code here
+	Scene::GetInstance().SetCalcNormalState(!Scene::GetInstance().GetCalcNormalState());
+}
+
+
+void CCGWorkView::OnUpdateNormalCalculated(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	CWnd* pParent = GetParent();
+	CMenu* pMenu = pParent->GetMenu();
+	if (pMenu != NULL)
+	{
+		pMenu->CheckMenuItem(ID_NORMAL_CALCULATED, MF_CHECKED | MF_BYCOMMAND);
+		pMenu->CheckMenuItem(ID_NORMAL_FROMFILE, MF_UNCHECKED | MF_BYCOMMAND);
+	}
 }

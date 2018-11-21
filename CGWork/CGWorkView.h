@@ -147,6 +147,8 @@ public:
 	afx_msg void OnUpdateButtonVertNorm(CCmdUI *pCmdUI);
 	afx_msg void OnButtonPolyNorm();
 	afx_msg void OnUpdateButtonPolyNorm(CCmdUI *pCmdUI);
+	afx_msg void OnNormalCalculated();
+	afx_msg void OnUpdateNormalCalculated(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp

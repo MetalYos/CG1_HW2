@@ -12,6 +12,10 @@ private:
 	Camera* camera;
 	//std::vector<Geometry*> geos;
 
+	bool isCalcNormal;
+
+	Vec4 bgColor;
+
 	Scene();
 
 public:
@@ -33,6 +37,13 @@ public:
 	const Mat4& GetCameraTransform() const;
 	const Mat4& GetProjections() const;
 	Camera* GetCamera() const;
+
+	void SetCalcNormalState(bool isCalcNorm);
+	bool GetCalcNormalState() const;
+
+	void SetBackgroundColor(int r, int g, int b);
+	void SetBackgroundColor(const Vec4& color);
+	Vec4 GetBackgroundColor() const;
 
 	void ResetScene(); // TODO: Implement reset scene (resets it when loading a new file)
 	void Draw(); // TODO: Implement draw (will call do all the matrix multiplications and call renderer)
