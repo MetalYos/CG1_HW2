@@ -1,0 +1,9 @@
+Todo List:
+
+1. Fix destructors (instead of  for loop, do a while loop where each iteration pops).
+2. Reset the scene when loading a file.
+3. Each model have a list of geometries (otherwise BBox is wrong, example: cow).
+4. Create Perspective projections (using left, right, bottom, up, and using FOV and AspectRatio).
+5. Draw BoundingBox.
+6. Draw Normals.
+7. Add Transformations.
