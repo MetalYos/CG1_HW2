@@ -28,6 +28,7 @@ struct Vertex
 {
 	Vec4 Pos;
 	Vec4 Normal;
+	Vec4 CalcNormal;
 	std::vector<Poly*> Polys;
 
 	Vertex() { }
@@ -38,6 +39,7 @@ struct Poly
 {
 	std::vector<Vertex*> Vertices;
 	Vec4 Normal;
+	Vec4 CalcNormal;
 };
 
 class Geometry
@@ -54,6 +56,6 @@ public:
 
 	void AddVertex(Vertex* v);
 	void AddPolygon(Poly* p);
-	void CalculatePolygonNormals();
+	void CalculateVerticesNormals();
 };
 

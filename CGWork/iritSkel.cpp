@@ -202,7 +202,7 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 				// Save Vertex normal if it exists
 				if (IP_HAS_NORMAL_VRTX(PVertex))
 				{
-					v->Normal = Vec4(PVertex->Normal[0], PVertex->Normal[1], PVertex->Normal[2], 1.0);
+					v->Normal = Vec4(PVertex->Normal[0], PVertex->Normal[1], PVertex->Normal[2], 0.0);
 				}
 
 				if (!vertExists)
@@ -214,23 +214,21 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 				// Save polygon normal
 				if (IP_HAS_PLANE_POLY(PPolygon))
 				{
-					p->Normal = Vec4(PPolygon->Plane[0], PPolygon->Plane[1], PPolygon->Plane[2], 1.0);
+					p->Normal = Vec4(PPolygon->Plane[0], PPolygon->Plane[1], PPolygon->Plane[2], 0.0);
+				}
+				// Calculate polygon normal
+				if (i >= 3)
+				{
+					Vec4 u = p->Vertices[0]->Pos;
+					Vec4 v = p->Vertices[1]->Pos;
+					Vec4 w = p->Vertices[2]->Pos;
+
+					p->CalcNormal = Vec4::Normalize3(Vec4::Cross(u - v, v - w));
+					p->CalcNormal[3] = 0.0;
 				}
 				else
 				{
-					// Calculate polygon normal
-					if (i >= 3)
-					{
-						Vec4 u = p->Vertices[0]->Pos;
-						Vec4 v = p->Vertices[1]->Pos;
-						Vec4 w = p->Vertices[2]->Pos;
-
-						p->Normal = Vec4::Normalize3(Vec4::Cross(u - v, v - w));
-					}
-					else
-					{
-						p->Normal = Vec4::Normalize3(Vec4(1.0));
-					}
+					p->CalcNormal = Vec4::Normalize3(Vec4(1.0, 1.0, 1.0, 0.0));
 				}
 
 				PVertex = PVertex -> Pnext;
@@ -242,7 +240,7 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 			geo->AddPolygon(p);
 	}
 	/* Close the object. */
-	geo->CalculatePolygonNormals();
+	geo->CalculateVerticesNormals();
 	
 	// Add model to scene
 	Scene::GetInstance().GetModels().back()->AddGeometry(geo);

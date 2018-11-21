@@ -36,22 +36,19 @@ void Geometry::AddPolygon(Poly * p)
 	Polygons.push_back(p);
 }
 
-void Geometry::CalculatePolygonNormals()
+void Geometry::CalculateVerticesNormals()
 {
-	Vec4 zero;
 	for (auto it = Vertices.begin(); it != Vertices.end(); ++it)
 	{
 		Vertex* v = (*it).second;
-		if (v->Normal == zero)
+		
+		Vec4 avg;
+		for (Poly* p : v->Polys)
 		{
-			Vec4 avg;
-			for (Poly* p : v->Polys)
-			{
-				avg += p->Normal;
-			}
-			avg /= v->Polys.size();
-			avg[3] = 1.0;
-			v->Normal = Vec4::Normalize3(avg);
+			avg += p->Normal;
 		}
+		avg /= v->Polys.size();
+		avg[3] = 0.0;
+		v->CalcNormal = Vec4::Normalize3(avg);
 	}
 }
