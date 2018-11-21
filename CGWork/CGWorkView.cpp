@@ -451,6 +451,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					if (model->AreVertexNormalsOn())
 					{
 						Vec4 nPos2 = pos1 + p->Vertices[i]->Normal;
+
 					}
 				}
 

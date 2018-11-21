@@ -143,6 +143,10 @@ public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnButtonBbox();
 	afx_msg void OnUpdateButtonBbox(CCmdUI *pCmdUI);
+	afx_msg void OnButtonVertNorm();
+	afx_msg void OnUpdateButtonVertNorm(CCmdUI *pCmdUI);
+	afx_msg void OnButtonPolyNorm();
+	afx_msg void OnUpdateButtonPolyNorm(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp
