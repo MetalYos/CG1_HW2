@@ -1,9 +1,18 @@
 Todo List:
 
-1. Fix destructors (instead of  for loop, do a while loop where each iteration pops).
-2. Reset the scene when loading a file.
-3. Each model have a list of geometries (otherwise BBox is wrong, example: cow).
-4. Create Perspective projections (using left, right, bottom, up, and using FOV and AspectRatio).
-5. Draw BoundingBox.
-6. Draw Normals.
-7. Add Transformations.
+1. Fix destructors (instead of  for loop, do a while loop where each iteration pops) - Yossi.
+2. Reset the scene after loading a file (update GUI values) - Together.
+3. Each model have a list of geometries (otherwise BBox is wrong, example: cow) - DONE.
+4. Create Perspective projections (using left, right, bottom, up, and using FOV and AspectRatio) - DONE.
+5. Draw BoundingBox - DONE.
+6. Draw Normals - Done for now (maybe add fix for scaling - low priority).
+7. Add View transformation - Yossi.
+8. Mouse Sensitivity dialog - Ben.
+9. Normal Calc/File - Yossi.
+11. Enable more than one axis - Ben (maybe together).
+12. Tessalltion dialog and connection to scene - Ben.
+13. Reload file after tessallation - Yossi (maybe together).
+14. Resizing - Yossi.
+15. Perspective Control GUI - Ben, connections - Together.
+16. Colors dialog connection - Ben.
+17. Advanced options - for now the second option - Together.
