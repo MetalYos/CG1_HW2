@@ -71,6 +71,10 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_WM_LBUTTONDOWN()
 	ON_COMMAND(ID_BUTTON_BBOX, &CCGWorkView::OnButtonBbox)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_BBOX, &CCGWorkView::OnUpdateButtonBbox)
+	ON_COMMAND(ID_BUTTON_VERT_NORM, &CCGWorkView::OnButtonVertNorm)
+	ON_UPDATE_COMMAND_UI(ID_BUTTON_VERT_NORM, &CCGWorkView::OnUpdateButtonVertNorm)
+	ON_COMMAND(ID_BUTTON_POLY_NORM, &CCGWorkView::OnButtonPolyNorm)
+	ON_UPDATE_COMMAND_UI(ID_BUTTON_POLY_NORM, &CCGWorkView::OnUpdateButtonPolyNorm)
 END_MESSAGE_MAP()
 
 
@@ -411,19 +415,21 @@ void CCGWorkView::OnDraw(CDC* pDC)
 				Vec4(0.0, 0.0, 1.0, 0.0),
 				Vec4((m_WindowWidth - 1) / 2.0, (m_WindowHeight - 1) / 2.0, 0.0, 1.0));
 
-	// Draw Polys
+	
 	for (Model* model : models)
 	{
 		Mat4 transform = model->GetTransform();
 		Vec4 color = model->GetColor();
 		for (Geometry* geo : model->GetGeometries())
 		{
+			// Draw Polys
 			std::vector<Poly*> polygons = geo->Polygons;
 			for (Poly* p : polygons)
 			{
 				std::vector<Edge> poly;
 				for (int i = 0; i < p->Vertices.size(); i++)
 				{
+					// Add edge to poly struct
 					Vec4 pos1 = p->Vertices[i]->Pos;
 					Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
 
@@ -440,6 +446,12 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix2(pix2Vec[0], pix2Vec[1]);
 
 					poly.push_back({ pix1, pix2 , RGB((BYTE)rand() % 255, (BYTE)rand() % 255, (BYTE)rand() % 255) });
+
+					// Draw vertex normal if needed
+					if (model->AreVertexNormalsOn())
+					{
+						Vec4 nPos2 = pos1 + p->Vertices[i]->Normal;
+					}
 				}
 
 				DrawPoly(pDCToUse, poly);
@@ -816,4 +828,49 @@ void CCGWorkView::OnButtonBbox()
 void CCGWorkView::OnUpdateButtonBbox(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(isBBoxOn);
+}
+
+
+void CCGWorkView::OnButtonVertNorm()
+{
+	// TODO: Add your command handler code here
+	if (Scene::GetInstance().GetModels().size() == 0)
+		return;
+
+	Model* model = Scene::GetInstance().GetModels().back();
+	model->SetNormals(!(model->AreVertexNormalsOn()), model->ArePolyNormalsOn());
+	Invalidate();
+}
+
+
+void CCGWorkView::OnUpdateButtonVertNorm(CCmdUI *pCmdUI)
+{
+	if (Scene::GetInstance().GetModels().size() == 0)
+		return;
+	
+	Model* model = Scene::GetInstance().GetModels().back();
+	pCmdUI->SetCheck(model->AreVertexNormalsOn());
+}
+
+
+void CCGWorkView::OnButtonPolyNorm()
+{
+	// TODO: Add your command handler code here
+	if (Scene::GetInstance().GetModels().size() == 0)
+		return;
+
+	Model* model = Scene::GetInstance().GetModels().back();
+	model->SetNormals(model->AreVertexNormalsOn(), !(model->ArePolyNormalsOn()));
+	Invalidate();
+}
+
+
+void CCGWorkView::OnUpdateButtonPolyNorm(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (Scene::GetInstance().GetModels().size() == 0)
+		return;
+
+	Model* model = Scene::GetInstance().GetModels().back();
+	pCmdUI->SetCheck(model->ArePolyNormalsOn());
 }

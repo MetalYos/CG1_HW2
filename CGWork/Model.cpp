@@ -147,3 +147,19 @@ void Model::BuildBoundingBox()
 	bbox.push_back(back);
 	bbox.push_back(bottom);
 }
+
+void Model::SetNormals(bool vertexNormals, bool polyNormals)
+{
+	this->vertexNormals = vertexNormals;
+	this->polyNormals = polyNormals;
+}
+
+bool Model::AreVertexNormalsOn() const
+{
+	return vertexNormals;
+}
+
+bool Model::ArePolyNormalsOn() const
+{
+	return polyNormals;
+}

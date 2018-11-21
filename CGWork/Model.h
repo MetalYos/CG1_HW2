@@ -10,13 +10,18 @@ private:
 	Mat4 transform;
 	Vec4 color;
 
+	// BBox parameters
 	bool isBBoxOn;
 	std::vector<Poly*> bbox;
 	Vec4 minCoord;
 	Vec4 maxCoord;
 
+	// Normal parameters
+	bool vertexNormals;
+	bool polyNormals;
+
 public:
-	Model() : color(AL_WHITE), isBBoxOn(false) { }
+	Model() : color(AL_WHITE), isBBoxOn(false), vertexNormals(false), polyNormals(false) { }
 	~Model();
 
 	void AddGeometry(Geometry* geo);
@@ -33,6 +38,10 @@ public:
 	void SetBBox(bool isBBoxOn);
 	bool IsBBoxOn() const;
 	void BuildBoundingBox();
+
+	void SetNormals(bool vertexNormals, bool polyNormals);
+	bool AreVertexNormalsOn() const;
+	bool ArePolyNormalsOn() const;
 	
 	//void Draw();
 };

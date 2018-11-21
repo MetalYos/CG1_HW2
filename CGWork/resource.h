@@ -55,21 +55,26 @@
 #define ID_BBOX                         32801
 #define ID_BUTTON_BBOX                  32801
 #define ID_BUTTON32802                  32802
+#define ID_BUTTON_VIEW                  32802
 #define ID_BUTTON32803                  32803
+#define ID_BUTTON_OBJECT                32803
 #define ID_BUTTON32804                  32804
+#define ID_BUTTON_POLY_NORM             32804
 #define ID_BUTTON32806                  32806
+#define ID_BUTTON_VERT_NORM             32806
 #define ID_VIEW_NORMAL                  32807
 #define ID_NORMAL_CALCULATED            32808
 #define ID_NORMAL_FROMFILE              32809
 #define ID_OPTIONS_TESSELLATIONTOLERANCE 32810
 #define ID_BUTTON32812                  32812
+#define ID_BUTTON_COLORS                32813
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        139
-#define _APS_NEXT_COMMAND_VALUE         32813
+#define _APS_NEXT_COMMAND_VALUE         32814
 #define _APS_NEXT_CONTROL_VALUE         1040
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

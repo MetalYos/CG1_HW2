@@ -202,7 +202,7 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 				// Save Vertex normal if it exists
 				if (IP_HAS_NORMAL_VRTX(PVertex))
 				{
-					v->Normal = Vec4(PVertex->Normal[0], PVertex->Normal[1], PVertex->Normal[2], 0.0);
+					v->Normal = Vec4::Normalize3(Vec4(PVertex->Normal[0], PVertex->Normal[1], PVertex->Normal[2], 0.0));
 				}
 
 				if (!vertExists)
@@ -214,7 +214,7 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 				// Save polygon normal
 				if (IP_HAS_PLANE_POLY(PPolygon))
 				{
-					p->Normal = Vec4(PPolygon->Plane[0], PPolygon->Plane[1], PPolygon->Plane[2], 0.0);
+					p->Normal = Vec4::Normalize3(Vec4(PPolygon->Plane[0], PPolygon->Plane[1], PPolygon->Plane[2], 0.0));
 				}
 				// Calculate polygon normal
 				if (i >= 3)
