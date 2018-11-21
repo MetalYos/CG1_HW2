@@ -59,6 +59,14 @@ BEGIN
     BUTTON      ID_AXIS_Y
     BUTTON      ID_AXIS_Z
     BUTTON      ID_BUTTON_BBOX
+    SEPARATOR
+    BUTTON      ID_BUTTON32802
+    BUTTON      ID_BUTTON32803
+    SEPARATOR
+    BUTTON      ID_BUTTON32804
+    BUTTON      ID_BUTTON32806
+    SEPARATOR
+    BUTTON      ID_BUTTON32812
 END
 
 
@@ -81,6 +89,11 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Orthographic",               ID_VIEW_ORTHOGRAPHIC
         MENUITEM "&Perspective",                ID_VIEW_PERSPECTIVE
+        POPUP "Normal"
+        BEGIN
+            MENUITEM "Calculated",                  ID_NORMAL_CALCULATED
+            MENUITEM "From File",                   ID_NORMAL_FROMFILE
+        END
     END
     POPUP "A&ction"
     BEGIN
@@ -98,6 +111,7 @@ BEGIN
     BEGIN
         MENUITEM "Perspective Control...",      ID_OPTIONS_PERSPECTIVECONTROL
         MENUITEM "Mouse Sensitivity...",        ID_OPTIONS_MOUSESENSITIVITY
+        MENUITEM "Tessellation Tolerance...",   ID_OPTIONS_TESSELLATIONTOLERANCE
     END
     POPUP "&Light"
     BEGIN
