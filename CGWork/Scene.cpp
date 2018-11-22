@@ -29,16 +29,6 @@ const std::vector<Model*>& Scene::GetModels() const
 	return models;
 }
 
-const Mat4 & Scene::GetCameraTransform() const
-{
-	return camera->GetTranform();
-}
-
-const Mat4 & Scene::GetProjections() const
-{
-	return camera->GetProjection();
-}
-
 Camera * Scene::GetCamera() const
 {
 	return camera;

@@ -33,8 +33,6 @@ public:
 	void CreateModel();
 
 	const std::vector<Model*>& GetModels() const;
-	const Mat4& GetCameraTransform() const;
-	const Mat4& GetProjections() const;
 	Camera* GetCamera() const;
 
 	void SetCalcNormalState(bool isCalcNorm);

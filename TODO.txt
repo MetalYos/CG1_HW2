@@ -6,13 +6,13 @@ Todo List:
 4. Create Perspective projections (using left, right, bottom, up, and using FOV and AspectRatio) - DONE.
 5. Draw BoundingBox - DONE.
 6. Draw Normals - DONE for now (maybe add fix for scaling - low priority).
-7. Add View transformation - Yossi - DONE (for now, not sure about the rotation).
+7. Add View transformation - Yossi - DONE (except for the the rotation).
 8. Mouse Sensitivity dialog - Ben.
 9. Normal Calc/File - Yossi - DONE.
 11. Enable more than one axis - Ben (maybe together).
 12. Tessalltion dialog and connection to scene - Ben.
 13. Reload file after tessallation - Yossi (maybe together).
 14. Resizing - Yossi - DONE.
-15. Perspective Control GUI - Ben, connections - Together.
+15. Perspective Control GUI - Yossi - DONE.
 16. Colors dialog connection - Ben.
 17. Advanced options - for now the second option - Together.

@@ -29,6 +29,7 @@ void Camera::Scale(Mat4& S)
 
 void Camera::Rotate(Mat4& R)
 {
+	// Need to fix rotation
 	R.Transpose();
 	cTransform = R * cTransform; // * R;
 }
@@ -65,7 +66,7 @@ void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z
 	result[1][1] = 1 / tan(fovyRad);
 	result[2][2] = -(z_far + z_near) / (z_far - z_near);
 	result[3][3] = 0.0;
-	result[3][2] = -1.0;
+	result[3][2] = -1.0 / z_near;
 	result[2][3] = -(2.0 * z_far * z_near) / (z_far - z_near);
 	result.Transpose();
 	

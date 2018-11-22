@@ -18,6 +18,8 @@
 
 #include <vector>
 #include "CColorsDialog.h"
+#include "CPerspectiveDialog.h"
+
 class CCGWorkView : public CView
 {
 protected: // create from serialization only
@@ -53,10 +55,8 @@ private:
 
 	// Orthographic projection height
 	double orthoHeight;
-
 	// Mouse pos
 	CPoint prevMousePos;
-
 	// BBOX parameters
 	bool isBBoxOn;
 
@@ -69,6 +69,7 @@ private:
 
 	//Dialogs
 	CColorsDialog m_colorDialog; 
+	CPerspectiveDialog m_perspDialog;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -161,6 +162,7 @@ public:
 	afx_msg void OnUpdateButtonView(CCmdUI *pCmdUI);
 	afx_msg void OnButtonObject();
 	afx_msg void OnUpdateButtonObject(CCmdUI *pCmdUI);
+	afx_msg void OnOptionsPerspectivecontrol();
 };
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp

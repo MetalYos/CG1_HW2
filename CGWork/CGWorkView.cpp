@@ -82,6 +82,7 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_VIEW, &CCGWorkView::OnUpdateButtonView)
 	ON_COMMAND(ID_BUTTON_OBJECT, &CCGWorkView::OnButtonObject)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_OBJECT, &CCGWorkView::OnUpdateButtonObject)
+	ON_COMMAND(ID_OPTIONS_PERSPECTIVECONTROL, &CCGWorkView::OnOptionsPerspectivecontrol)
 END_MESSAGE_MAP()
 
 // A patch to fix GLaux disappearance from VS2005 to VS2008
@@ -410,14 +411,22 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 	if (isFirstDraw)
 	{
+		// Get Viewport parameters
 		m_WindowWidth = r.Width();
 		m_WindowHeight = r.Height();
 		m_AspectRatio = m_WindowWidth / m_WindowHeight;
+
+		// Set initial Projection matricies
 		double width = orthoHeight * m_AspectRatio;
-		
 		Scene::GetInstance().GetCamera()->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
 		Scene::GetInstance().GetCamera()->SetOrthographic(-width / 2.0,
 			width / 2.0, orthoHeight / 2.0, -orthoHeight / 2.0, 1, 1000.0);
+
+		// Set Perspective dialog default values
+		m_perspDialog.NearPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Near;
+		m_perspDialog.FarPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Far;
+		m_perspDialog.FOV = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().FOV;
+
 		isFirstDraw = false;
 	}
 	
@@ -1021,4 +1030,23 @@ void CCGWorkView::OnButtonObject()
 void CCGWorkView::OnUpdateButtonObject(CCmdUI *pCmdUI)
 {
 	pCmdUI->SetCheck(m_nCoordSpace == ID_BUTTON_OBJECT);
+}
+
+
+void CCGWorkView::OnOptionsPerspectivecontrol()
+{
+	Camera* camera = Scene::GetInstance().GetCamera();
+	PerspectiveParams pParams = camera->GetPerspectiveParameters();
+	m_perspDialog.NearPlane = pParams.Near;
+	m_perspDialog.FarPlane = pParams.Far;
+	m_perspDialog.FOV = pParams.FOV;
+
+	if (m_perspDialog.DoModal() == IDOK)
+	{
+		camera->SetPerspective(m_perspDialog.FOV, m_AspectRatio, 
+			m_perspDialog.NearPlane, m_perspDialog.FarPlane);
+		camera->SwitchProjection(camera->IsPerspective());
+
+		Invalidate();
+	}
 }
