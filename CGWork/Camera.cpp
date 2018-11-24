@@ -30,7 +30,7 @@ void Camera::Scale(Mat4& S)
 void Camera::Rotate(Mat4& R)
 {
 	// Need to fix rotation
-	R.Transpose();
+	//R.Transpose();
 	cTransform = R * cTransform; // * R;
 }
 
@@ -41,10 +41,14 @@ Mat4 Camera::GetTranform() const
 
 void Camera::SetOrthographic(double left, double right, double top, double bottom, double near, double far)
 {
-	Mat4 result(Vec4(-2.0 / (right - left), 0.0, 0.0, 0.0),
-		Vec4(0.0, -2.0 / (top - bottom), 0.0, 0.0),
-		Vec4(0.0, 0.0, 2.0 / (near - far), 0.0),
-		Vec4(-(right + left) / (right - left), -(top + bottom) / (top - bottom), (far + near) / (far - near), 1.0));
+	Mat4 result;
+	result[0][0] = -2.0 / (right - left);
+	result[1][1] = -2.0 / (top - bottom);
+	result[2][3] = 2.0 / (near - far);
+	result[3][0] = -(right + left) / (right - left);
+	result[3][1] = -(top + bottom) / (top - bottom);
+	result[3][2] = (far + near) / (far - near);
+
 	projection = result;
 	orthographic = result;
 	isPerspective = false;
@@ -57,27 +61,42 @@ void Camera::SetOrthographic(double left, double right, double top, double botto
 	orthographicParams.Far = far;
 }
 
-void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z_far)
+void Camera::SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far)
 {
-	double fovyRad = ToRadians(fovy / 2.0);
-
 	Mat4 result;
-	result[0][0] = 1.0 / (tan(fovyRad) * aspectR);
-	result[1][1] = 1 / tan(fovyRad);
+	result[0][0] = 2 * z_near / (right - left);
+	result[0][2] = (right + left) / (right - left);
+	result[1][1] = 2 * z_near / (top - bottom);
+	result[1][2] = (top + bottom) / (top - bottom);
 	result[2][2] = -(z_far + z_near) / (z_far - z_near);
+	result[2][3] = -2 * z_far * z_near / (z_far - z_near);
+	result[3][2] = -1.0;
 	result[3][3] = 0.0;
-	result[3][2] = -1.0 / z_near;
-	result[2][3] = -(2.0 * z_far * z_near) / (z_far - z_near);
 	result.Transpose();
-	
+
 	projection = result;
 	perspective = result;
 	isPerspective = true;
 
-	perspectiveParams.FOV = fovy;
-	perspectiveParams.AspectRatio = aspectR;
+	perspectiveParams.Left = left;
+	perspectiveParams.Right = right;
+	perspectiveParams.Top = top;
+	perspectiveParams.Bottom = bottom;
 	perspectiveParams.Near = z_near;
 	perspectiveParams.Far = z_far;
+	perspectiveParams.FOV = ToDegrees(atan(top / z_near)) * 2.0;
+}
+
+void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z_far)
+{
+	double f = tan(ToRadians(fovy / 2.0));
+	double top = z_near * f;
+	double right = top * aspectR;
+
+	SetPerspective(-right, right, top, -top, z_near, z_far);
+
+	perspectiveParams.FOV = fovy;
+	perspectiveParams.AspectRatio = aspectR;
 }
 
 Mat4 Camera::GetProjection() const

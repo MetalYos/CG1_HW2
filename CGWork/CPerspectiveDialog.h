@@ -13,7 +13,6 @@ public:
 
 	double NearPlane;
 	double FarPlane;
-	double FOV;
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME

@@ -28,8 +28,6 @@ void CPerspectiveDialog::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxDouble(pDX, NearPlane, 0.001, FarPlane);
 	DDX_Text(pDX, IDC_EDIT_FAR, FarPlane);
 	DDV_MinMaxDouble(pDX, FarPlane, NearPlane, 10000.0);
-	DDX_Text(pDX, IDC_EDIT_FOV, FOV);
-	DDV_MinMaxDouble(pDX, FOV, 10.0, 180.0);
 }
 
 

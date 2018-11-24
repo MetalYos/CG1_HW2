@@ -320,7 +320,7 @@ BOOL CCGWorkView::InitializeCGWork()
 	m_pDbBitMap = CreateCompatibleBitmap(m_pDC->m_hDC, r.right, r.bottom);	
 	m_pDbDC->SelectObject(m_pDbBitMap);
 
-	Scene::GetInstance().GetCamera()->LookAt(Vec4(0.0, 0.0, -15.0), Vec4(0.0, 0.0, 1.0), Vec4(0.0, 1.0, 0.0));
+	Scene::GetInstance().GetCamera()->LookAt(Vec4(0.0, 0.0, 5.0), Vec4(0.0, 0.0, 1.0), Vec4(0.0, 1.0, 0.0));
 
 	return TRUE;
 }
@@ -425,7 +425,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		// Set Perspective dialog default values
 		m_perspDialog.NearPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Near;
 		m_perspDialog.FarPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Far;
-		m_perspDialog.FOV = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().FOV;
 
 		isFirstDraw = false;
 	}
@@ -475,6 +474,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					// Add edge to poly struct
 					Vec4 pos1 = p->Vertices[i]->Pos;
 					Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
+
+					Vec4 temp = pos1 * transform * camTransform;
 
 					Vec4 clipped1 = pos1 * transform * camTransform * projection;
 					Vec4 clipped2 = pos2 * transform * camTransform * projection;
@@ -1043,14 +1044,16 @@ void CCGWorkView::OnOptionsPerspectivecontrol()
 	PerspectiveParams pParams = camera->GetPerspectiveParameters();
 	m_perspDialog.NearPlane = pParams.Near;
 	m_perspDialog.FarPlane = pParams.Far;
-	m_perspDialog.FOV = pParams.FOV;
 
 	if (m_perspDialog.DoModal() == IDOK)
 	{
-		camera->SetPerspective(m_perspDialog.FOV, m_AspectRatio, 
-			m_perspDialog.NearPlane, m_perspDialog.FarPlane);
-		camera->SwitchProjection(camera->IsPerspective());
+		if ((m_perspDialog.NearPlane != pParams.Near) || (m_perspDialog.FarPlane != pParams.Far))
+		{
+			camera->SetPerspective(pParams.Left, pParams.Right, pParams.Top, pParams.Bottom,
+				m_perspDialog.NearPlane, m_perspDialog.FarPlane);
+			camera->SwitchProjection(camera->IsPerspective());
 
-		Invalidate();
+			Invalidate();
+		}
 	}
 }

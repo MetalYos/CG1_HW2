@@ -4,10 +4,14 @@
 
 struct PerspectiveParams
 {
-	double FOV;
-	double AspectRatio;
+	double Left;
+	double Right;
+	double Top;
+	double Bottom;
 	double Near;
 	double Far;
+	double FOV;
+	double AspectRatio;
 };
 
 struct OrthographicParams
@@ -43,6 +47,7 @@ public:
 	Mat4 GetTranform() const;
 
 	void SetOrthographic(double left, double right, double top, double bottom, double z_near, double z_far);
+	void SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far);
 	void SetPerspective(double fovy, double aspectR, double z_near, double z_far);
 	Mat4 GetProjection() const;
 

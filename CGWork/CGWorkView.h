@@ -19,6 +19,7 @@
 #include <vector>
 #include "CColorsDialog.h"
 #include "CPerspectiveDialog.h"
+#include "ALMath.h"
 
 class CCGWorkView : public CView
 {

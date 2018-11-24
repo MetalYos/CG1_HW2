@@ -24,3 +24,14 @@ inline double ToDegrees(double angleInRadians)
 {
 	return (angleInRadians * 180.0) / AL_PI;
 }
+
+inline Vec4 LinePlaneCollision(const Vec4& p1, const Vec4& p2, double A, double B, double C, double D)
+{
+	Vec4 result;
+	Vec4 diff(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
+	double numerator = A * p1[0] + B * p1[1] + C * p1[2] + D;
+	double denominator = A * diff[0] + B * diff[1] + C * diff[2];
+	for (int i = 0; i < 3; i++)
+		result[i] = p1[i] - (diff[i] * numerator) / denominator;
+	return result;
+}
