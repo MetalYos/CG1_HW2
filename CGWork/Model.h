@@ -13,23 +13,16 @@ private:
 	Vec4 normalColor;
 
 	// BBox parameters
-	bool isBBoxOn;
 	std::vector<Poly*> bbox;
 	Vec4 minCoord;
 	Vec4 maxCoord;
 
-	// Normal parameters
-	bool vertexNormals;
-	bool polyNormals;
-
 public:
-	Model() : color(AL_WHITE), isBBoxOn(false), vertexNormals(false), polyNormals(false),
-			normalColor(AL_RED) { }
+	Model() : color(AL_WHITE), normalColor(AL_RED) { }
 	~Model();
 
 	void AddGeometry(Geometry* geo);
 
-	void SetTranform(const Mat4& T);
 	const Mat4& GetTransform() const;
 	const Mat4& GetNormalTransform() const;
 	void Translate(const Mat4& T);
@@ -47,13 +40,9 @@ public:
 	void SetNormalColor(const Vec4& color);
 	const Vec4& GetNormalColor() const;
 
-	void SetBBox(bool isBBoxOn);
-	bool IsBBoxOn() const;
 	void BuildBoundingBox();
-
-	void SetNormals(bool vertexNormals, bool polyNormals);
-	bool AreVertexNormalsOn() const;
-	bool ArePolyNormalsOn() const;
+	Vec4 GetBBoxDimensions() const;
+	Vec4 GetBBoxCenter() const;
 	
 	//void Draw();
 };

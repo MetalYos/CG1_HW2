@@ -419,8 +419,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		// Set initial Projection matricies
 		double width = orthoHeight * m_AspectRatio;
 		Scene::GetInstance().GetCamera()->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
-		Scene::GetInstance().GetCamera()->SetOrthographic(-width / 2.0,
-			width / 2.0, orthoHeight / 2.0, -orthoHeight / 2.0, 1, 1000.0);
+		Scene::GetInstance().GetCamera()->SetOrthographic(orthoHeight, m_AspectRatio, 1, 1000.0);
 
 		// Set Perspective dialog default values
 		m_perspDialog.NearPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Near;
@@ -489,10 +488,10 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
 					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
-					poly.push_back({ pix1, pix2 , AL_RAINBOW_CREF });
+					poly.push_back({ pix1, pix2 , RGB(color[0], color[1], color[2]) });
 
 					// Draw vertex normal if needed
-					if (model->AreVertexNormalsOn())
+					if (Scene::GetInstance().AreVertexNormalsOn())
 					{
 						Vec4 normal = Scene::GetInstance().GetCalcNormalState() ?
 							p->Vertices[i]->CalcNormal : p->Vertices[i]->Normal;
@@ -514,7 +513,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 				DrawPoly(pDCToUse, poly);
 
 				// Draw poly normal if needed
-				if (model->ArePolyNormalsOn())
+				if (Scene::GetInstance().ArePolyNormalsOn())
 				{
 					Vec4 normal = Scene::GetInstance().GetCalcNormalState() ?
 						p->CalcNormal : p->Normal;
@@ -539,7 +538,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		}
 
 		// Draw Bounding Box
-		if (model->IsBBoxOn())
+		if (Scene::GetInstance().GetBBoxState())
 		{
 			std::vector<Poly*> polygons = model->GetBBox();
 			for (Poly* p : polygons)
@@ -562,7 +561,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
 					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
-					poly.push_back({ pix1, pix2 , RGB((BYTE)rand() % 255, (BYTE)rand() % 255, (BYTE)rand() % 255) });
+					poly.push_back({ pix1, pix2 , RGB(color[0], color[1], color[2]) });
 				}
 
 				DrawPoly(pDCToUse, poly);
@@ -615,27 +614,41 @@ void CCGWorkView::OnFileLoad()
 	CFileDialog dlg(TRUE, _T("itd"), _T("*.itd"), OFN_FILEMUSTEXIST | OFN_HIDEREADONLY ,szFilters);
 
 	if (dlg.DoModal () == IDOK) {
-
+		// Delete previous models
+		Scene::GetInstance().DeleteModels();
 		// Create Model
 		Scene::GetInstance().CreateModel();
-
+		// Load model from file
 		m_strItdFileName = dlg.GetPathName();		// Full path and filename
 		PngWrapper p;
 		CGSkelProcessIritDataFiles(m_strItdFileName, 1);
-		
 		// Build Building Box
 		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
+		// Set Camera position
+		Camera* camera = Scene::GetInstance().GetCamera();
+		Model* model = Scene::GetInstance().GetModels().back();
+		Vec4 bboxDim = model->GetBBoxDimensions();
+		double maxDim = max(max(bboxDim[0], bboxDim[1]), bboxDim[2]);
+		double radius = maxDim / 2.0;
+		double f = tan(ToRadians(camera->GetPerspectiveParameters().FOV / 2.0));
+		double offset = 1.5;
+		if (bboxDim[0] > bboxDim[1])
+		{
+			f = tan(ToRadians(m_AspectRatio * camera->GetPerspectiveParameters().FOV / 2.0));
+			offset = 2.0;
+		}
+		double zPos = abs(radius / f) * offset;
+		Vec4 bboxCenter = model->GetBBoxCenter();
+		camera->LookAt(bboxCenter - Vec4(0.0, 0.0, zPos), bboxCenter, Vec4(0.0, 1.0, 0.0));
 
-		// TODO: Reset Scene
+		// Set orthographic projection dimensions
+		double orthoOffset = 0.5;
+		camera->SetOrthographic(abs(maxDim) + orthoOffset, m_AspectRatio, 1.0, 1000.0);
+		camera->SwitchProjection(m_bIsPerspective);
 
 		Invalidate();	// force a WM_PAINT for drawing.
 	} 
-
 }
-
-
-
-
 
 // VIEW HANDLERS ///////////////////////////////////////////
 
@@ -912,7 +925,6 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 
 	prevMousePos = point;
 
-
 	CView::OnMouseMove(nFlags, point);
 }
 
@@ -922,9 +934,8 @@ void CCGWorkView::OnButtonBbox()
 	isBBoxOn = !isBBoxOn;
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
-	Model* model = Scene::GetInstance().GetModels().back();
 
-	model->SetBBox(isBBoxOn);
+	Scene::GetInstance().SetBBoxState(isBBoxOn);
 
 	Invalidate();
 }
@@ -941,8 +952,8 @@ void CCGWorkView::OnButtonVertNorm()
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 
-	Model* model = Scene::GetInstance().GetModels().back();
-	model->SetNormals(!(model->AreVertexNormalsOn()), model->ArePolyNormalsOn());
+	Scene::GetInstance().SetNormals(!(Scene::GetInstance().AreVertexNormalsOn()), 
+		Scene::GetInstance().ArePolyNormalsOn());
 	Invalidate();
 }
 
@@ -952,8 +963,7 @@ void CCGWorkView::OnUpdateButtonVertNorm(CCmdUI *pCmdUI)
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 	
-	Model* model = Scene::GetInstance().GetModels().back();
-	pCmdUI->SetCheck(model->AreVertexNormalsOn());
+	pCmdUI->SetCheck(Scene::GetInstance().AreVertexNormalsOn());
 }
 
 
@@ -962,8 +972,8 @@ void CCGWorkView::OnButtonPolyNorm()
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 
-	Model* model = Scene::GetInstance().GetModels().back();
-	model->SetNormals(model->AreVertexNormalsOn(), !(model->ArePolyNormalsOn()));
+	Scene::GetInstance().SetNormals(Scene::GetInstance().AreVertexNormalsOn(),
+		!(Scene::GetInstance().ArePolyNormalsOn()));
 	Invalidate();
 }
 
@@ -973,8 +983,7 @@ void CCGWorkView::OnUpdateButtonPolyNorm(CCmdUI *pCmdUI)
 	if (Scene::GetInstance().GetModels().size() == 0)
 		return;
 
-	Model* model = Scene::GetInstance().GetModels().back();
-	pCmdUI->SetCheck(model->ArePolyNormalsOn());
+	pCmdUI->SetCheck(Scene::GetInstance().ArePolyNormalsOn());
 }
 
 

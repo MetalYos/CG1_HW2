@@ -2,7 +2,8 @@
 #include "StdAfx.h"
 
 
-Scene::Scene() : camera(new Camera()), isCalcNormal(true), bgColor((AL_BLACK))
+Scene::Scene() : camera(new Camera()), isBBoxOn(false), vertexNormals(false), 
+	polyNormals(false), isCalcNormal(true), bgColor((AL_BLACK))
 {
 }
 
@@ -34,6 +35,32 @@ Camera * Scene::GetCamera() const
 	return camera;
 }
 
+void Scene::SetBBoxState(bool isBBoxOn)
+{
+	this->isBBoxOn = isBBoxOn;
+}
+
+bool Scene::GetBBoxState() const
+{
+	return isBBoxOn;
+}
+
+void Scene::SetNormals(bool vertexNormals, bool polyNormals)
+{
+	this->vertexNormals = vertexNormals;
+	this->polyNormals = polyNormals;
+}
+
+bool Scene::AreVertexNormalsOn() const
+{
+	return vertexNormals;
+}
+
+bool Scene::ArePolyNormalsOn() const
+{
+	return polyNormals;
+}
+
 void Scene::SetCalcNormalState(bool isCalcNorm)
 {
 	this->isCalcNormal = isCalcNorm;
@@ -57,4 +84,14 @@ void Scene::SetBackgroundColor(const Vec4 & color)
 Vec4 Scene::GetBackgroundColor() const
 {
 	return bgColor;
+}
+
+void Scene::DeleteModels()
+{
+	while (models.size() > 0)
+	{
+		Model* model = models.back();
+		models.pop_back();
+		delete model;
+	}
 }

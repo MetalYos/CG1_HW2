@@ -24,6 +24,13 @@ struct OrthographicParams
 	double Far;
 };
 
+struct CameraParameters
+{
+	Vec4 Front;
+	Vec4 Side;
+	Vec4 Up;
+};
+
 class Camera
 {
 private:
@@ -34,6 +41,7 @@ private:
 	Mat4 orthographic;
 	bool isPerspective;
 
+	CameraParameters camParams;
 	PerspectiveParams perspectiveParams;
 	OrthographicParams orthographicParams;
 
@@ -47,10 +55,12 @@ public:
 	Mat4 GetTranform() const;
 
 	void SetOrthographic(double left, double right, double top, double bottom, double z_near, double z_far);
+	void SetOrthographic(double height, double aspectR, double z_near, double z_far);
 	void SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far);
 	void SetPerspective(double fovy, double aspectR, double z_near, double z_far);
 	Mat4 GetProjection() const;
 
+	const CameraParameters& GetCameraParameters() const;
 	const PerspectiveParams& GetPerspectiveParameters() const;
 	const OrthographicParams& GetOrthographicParameters() const;
 

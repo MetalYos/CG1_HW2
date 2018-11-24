@@ -12,6 +12,9 @@ private:
 	Camera* camera;
 	//std::vector<Geometry*> geos;
 
+	bool isBBoxOn;
+	bool vertexNormals;
+	bool polyNormals;
 	bool isCalcNormal;
 	Vec4 bgColor;
 
@@ -35,6 +38,13 @@ public:
 	const std::vector<Model*>& GetModels() const;
 	Camera* GetCamera() const;
 
+	void SetBBoxState(bool isBBoxOn);
+	bool GetBBoxState() const;
+
+	void SetNormals(bool vertexNormals, bool polyNormals);
+	bool AreVertexNormalsOn() const;
+	bool ArePolyNormalsOn() const;
+
 	void SetCalcNormalState(bool isCalcNorm);
 	bool GetCalcNormalState() const;
 
@@ -42,7 +52,7 @@ public:
 	void SetBackgroundColor(const Vec4& color);
 	Vec4 GetBackgroundColor() const;
 
-	void ResetScene(); // TODO: Implement reset scene (resets it when loading a new file)
-	void Draw(); // TODO: Implement draw (will call do all the matrix multiplications and call renderer)
+	void DeleteModels();
+	//void Draw(); // TODO: Implement draw (will call do all the matrix multiplications and call renderer)
 };
 

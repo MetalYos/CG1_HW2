@@ -41,11 +41,6 @@ void Model::AddGeometry(Geometry * geo)
 	}
 }
 
-void Model::SetTranform(const Mat4 & T)
-{
-	transform = T * transform;
-}
-
 const Mat4& Model::GetTransform() const
 {
 	return transform;
@@ -113,16 +108,6 @@ const Vec4 & Model::GetNormalColor() const
 	return normalColor;
 }
 
-void Model::SetBBox(bool isBBoxOn)
-{
-	this->isBBoxOn = isBBoxOn;
-}
-
-bool Model::IsBBoxOn() const
-{
-	return isBBoxOn;
-}
-
 void Model::BuildBoundingBox()
 {
 	Vec4 a(minCoord[0], maxCoord[1], maxCoord[2]);
@@ -185,18 +170,19 @@ void Model::BuildBoundingBox()
 	bbox.push_back(bottom);
 }
 
-void Model::SetNormals(bool vertexNormals, bool polyNormals)
+Vec4 Model::GetBBoxDimensions() const
 {
-	this->vertexNormals = vertexNormals;
-	this->polyNormals = polyNormals;
+	Vec4 result = maxCoord - minCoord;
+	for (int i = 0; i < 3; i++)
+	{
+		result[0] = abs(result[0]);
+	}
+	return result;
 }
 
-bool Model::AreVertexNormalsOn() const
+Vec4 Model::GetBBoxCenter() const
 {
-	return vertexNormals;
-}
-
-bool Model::ArePolyNormalsOn() const
-{
-	return polyNormals;
+	Vec4 result = minCoord + (maxCoord - minCoord) / 2.0;
+	result[3] = 1.0;
+	return result;
 }

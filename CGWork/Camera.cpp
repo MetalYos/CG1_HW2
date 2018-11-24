@@ -61,6 +61,12 @@ void Camera::SetOrthographic(double left, double right, double top, double botto
 	orthographicParams.Far = far;
 }
 
+void Camera::SetOrthographic(double height, double aspectR, double z_near, double z_far)
+{
+	double width = height * aspectR;
+	SetOrthographic(-width / 2.0, width / 2.0, height / 2.0, -height / 2.0, 1, 1000.0);
+}
+
 void Camera::SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far)
 {
 	Mat4 result;
@@ -104,6 +110,11 @@ Mat4 Camera::GetProjection() const
 	return projection;
 }
 
+const CameraParameters & Camera::GetCameraParameters() const
+{
+	return camParams;
+}
+
 const PerspectiveParams & Camera::GetPerspectiveParameters() const
 {
 	return perspectiveParams;
@@ -130,7 +141,7 @@ bool Camera::IsPerspective() const
 
 void Camera::LookAt(const Vec4 & eye, const Vec4 & at, const Vec4 & up)
 {
-	Vec4 n = Vec4::Normalize3(eye);
+	Vec4 n = Vec4::Normalize3(eye - at);
 	n[3] = 0;
 	Vec4 u = Vec4::Normalize3(Vec4::Cross(up, n));
 	u[3] = 0;
@@ -141,4 +152,7 @@ void Camera::LookAt(const Vec4 & eye, const Vec4 & at, const Vec4 & up)
 	cTransform = c * Mat4::Translate(-eye);
 	cTransform[3][3] = 1.0;
 
+	camParams.Front = n;
+	camParams.Side = u;
+	camParams.Up = v;
 }
