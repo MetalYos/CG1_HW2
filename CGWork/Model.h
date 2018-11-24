@@ -8,6 +8,7 @@ class Model
 private:
 	std::vector<Geometry*> geos;
 	Mat4 transform;
+	Mat4 normalTransform;
 	Vec4 color;
 	Vec4 normalColor;
 
@@ -30,6 +31,11 @@ public:
 
 	void SetTranform(const Mat4& T);
 	const Mat4& GetTransform() const;
+	const Mat4& GetNormalTransform() const;
+	void Translate(const Mat4& T);
+	void Scale(const Mat4& S);
+	void Rotate(const Mat4& R);
+
 	const std::vector<Geometry*>& GetGeometries() const;
 	const std::vector<Poly*>& GetBBox() const;
 

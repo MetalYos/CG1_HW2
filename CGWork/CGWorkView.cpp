@@ -459,6 +459,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	for (Model* model : models)
 	{
 		Mat4 transform = model->GetTransform();
+		Mat4 normalTransform = model->GetNormalTransform();
 		Vec4 color = model->GetColor();
 		Vec4 normalColor = model->GetNormalColor();
 		for (Geometry* geo : model->GetGeometries())
@@ -494,8 +495,11 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					{
 						Vec4 normal = Scene::GetInstance().GetCalcNormalState() ?
 							p->Vertices[i]->CalcNormal : p->Vertices[i]->Normal;
-						normal = pos1 + p->Vertices[i]->Normal * 0.3;
 						normal = normal * transform * camTransform * projection;
+						normal = Vec4::Normalize3(normal);
+
+						normal = clipped1 + normal * 0.1;
+
 						normal = normal * toView;
 						CPoint nPix2((int)normal[0], (int)normal[1]);
 
@@ -513,12 +517,14 @@ void CCGWorkView::OnDraw(CDC* pDC)
 				{
 					Vec4 normal = Scene::GetInstance().GetCalcNormalState() ?
 						p->CalcNormal : p->Normal;
-					normal = polyCenter + p->Normal * 0.3;
 
 					polyCenter = polyCenter * transform * camTransform * projection;
-					normal = normal * transform * camTransform * projection;
+					normal = normal * normalTransform * camTransform * projection;
+					normal = Vec4::Normalize3(normal);
 
 					polyCenter /= polyCenter[3];
+
+					normal = polyCenter + normal * 0.1;
 
 					polyCenter = polyCenter * toView;
 					normal = normal * toView;
@@ -802,7 +808,6 @@ void CCGWorkView::OnLightConstants()
 
 void CCGWorkView::OnTimer(UINT_PTR nIDEvent)
 {
-	// TODO: Add your message handler code here and/or call default
 	CView::OnTimer(nIDEvent);
 	if (nIDEvent == 1)
 		Invalidate();
@@ -810,7 +815,6 @@ void CCGWorkView::OnTimer(UINT_PTR nIDEvent)
 
 void CCGWorkView::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	// TODO: Add your message handler code here and/or call default
 	prevMousePos = point;
 
 	CView::OnLButtonDown(nFlags, point);
@@ -836,21 +840,21 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 			if (m_nAxis == ID_AXIS_X)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
+					model->Translate(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
 				else
 					camera->Translate(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
 			}
 			if (m_nAxis == ID_AXIS_Y)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
+					model->Translate(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
 				else
 					camera->Translate(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
 			}
 			if (m_nAxis == ID_AXIS_Z)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
+					model->Translate(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
 				else
 					camera->Translate(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
 			}
@@ -860,21 +864,21 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 			if (m_nAxis == ID_AXIS_X)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::RotateX(dx / sensitivity[1]));
+					model->Rotate(Mat4::RotateX(dx / sensitivity[1]));
 				else
 					camera->Rotate(Mat4::RotateX(dx / sensitivity[1]));
 			}
 			if (m_nAxis == ID_AXIS_Y)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::RotateY(dx / sensitivity[1]));
+					model->Rotate(Mat4::RotateY(dx / sensitivity[1]));
 				else
 					camera->Rotate(Mat4::RotateY(dx / sensitivity[1]));
 			}
 			if (m_nAxis == ID_AXIS_Z)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::RotateZ(dx / sensitivity[1]));
+					model->Rotate(Mat4::RotateZ(dx / sensitivity[1]));
 				else
 					camera->Rotate(Mat4::RotateZ(dx / sensitivity[1]));
 			}
@@ -884,21 +888,21 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 			if (m_nAxis == ID_AXIS_X)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
+					model->Scale(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
 				else
 					camera->Scale(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
 			}
 			if (m_nAxis == ID_AXIS_Y)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
+					model->Scale(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
 				else
 					camera->Scale(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
 			}
 			if (m_nAxis == ID_AXIS_Z)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->SetTranform(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
+					model->Scale(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
 				else
 					camera->Scale(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
 			}
