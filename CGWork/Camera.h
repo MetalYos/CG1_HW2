@@ -8,8 +8,8 @@ struct PerspectiveParams
 	double Right;
 	double Top;
 	double Bottom;
-	double Near;
-	double Far;
+	double Near = 1.0;
+	double Far = 1000.0;
 	double FOV;
 	double AspectRatio;
 };
@@ -20,8 +20,8 @@ struct OrthographicParams
 	double Right;
 	double Top;
 	double Bottom;
-	double Near;
-	double Far;
+	double Near = 1.0;
+	double Far = 1000.0;
 };
 
 struct CameraParameters
@@ -40,19 +40,25 @@ private:
 	Mat4 projection;
 
 	Mat4 perspective;
+	Mat4 perspectiveInv;
 	Mat4 orthographic;
+	Mat4 orthographicInv;
 	bool isPerspective;
 
 	CameraParameters camParams;
 	PerspectiveParams perspectiveParams;
 	OrthographicParams orthographicParams;
 
+private:
+	void calculatePerspectiveInverse();
+	void calculateOrthographicInverse();
+
 public:
 	Camera();
 	~Camera();
 
 	void Translate(Mat4& T);
-	void Scale(Mat4& S);
+	void Scale(Mat4& S, bool aroundEye = true);
 	void Rotate(Mat4& R, bool aroundEye = true);
 	Mat4 GetTranform() const;
 
@@ -61,6 +67,7 @@ public:
 	void SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far);
 	void SetPerspective(double fovy, double aspectR, double z_near, double z_far);
 	Mat4 GetProjection() const;
+	Mat4 GetProjectionInverse() const;
 
 	const CameraParameters& GetCameraParameters() const;
 	const PerspectiveParams& GetPerspectiveParameters() const;

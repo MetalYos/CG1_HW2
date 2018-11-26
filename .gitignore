@@ -7,6 +7,8 @@ CGWork/.vs/
 
 # debugging
 *.pdb
+bin/Debug/*.ilk
+bin/Debug/*.pdb
 
 # Prerequisites
 *.d

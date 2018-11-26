@@ -434,10 +434,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 		isFirstDraw = false;
 	}
-	
-	//TODO - add these actions to an init function - real background color should be stored in CColorsDialog
-	//Vec4 bgColor = Scene::GetInstance().GetBackgroundColor();
-	//COLORREF bGColorRef = RGB((int)bgColor[0], (int)bgColor[1], (int)bgColor[2]);
 
 	COLORREF bGColorRef = m_colorDialog.BackgroundColor;
 	pDCToUse->FillSolidRect(&r, bGColorRef);
@@ -882,6 +878,11 @@ void CCGWorkView::OnTimer(UINT_PTR nIDEvent)
 void CCGWorkView::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	prevMousePos = point;
+
+	if (m_nAction == ID_ACTION_SELECT && Scene::GetInstance().GetModels().size() > 0)
+	{
+		// TODO: check what polygons intersect with mouse
+	}
 
 	CView::OnLButtonDown(nFlags, point);
 }

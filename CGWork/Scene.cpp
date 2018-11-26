@@ -71,21 +71,6 @@ bool Scene::GetCalcNormalState() const
 	return isCalcNormal;
 }
 
-void Scene::SetBackgroundColor(int r, int g, int b)
-{
-	bgColor = Vec4(r, g, b);
-}
-
-void Scene::SetBackgroundColor(const Vec4 & color)
-{
-	bgColor = color;
-}
-
-Vec4 Scene::GetBackgroundColor() const
-{
-	return bgColor;
-}
-
 void Scene::DeleteModels()
 {
 	while (models.size() > 0)

@@ -48,10 +48,6 @@ public:
 	void SetCalcNormalState(bool isCalcNorm);
 	bool GetCalcNormalState() const;
 
-	void SetBackgroundColor(int r, int g, int b);
-	void SetBackgroundColor(const Vec4& color);
-	Vec4 GetBackgroundColor() const;
-
 	void DeleteModels();
 	//void Draw(); // TODO: Implement draw (will call do all the matrix multiplications and call renderer)
 };

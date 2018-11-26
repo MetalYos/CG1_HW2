@@ -40,6 +40,9 @@ struct Poly
 	std::vector<Vertex*> Vertices;
 	Vec4 Normal;
 	Vec4 CalcNormal;
+	bool IsSelected;
+
+	Poly() : IsSelected(false) {}
 };
 
 class Geometry
