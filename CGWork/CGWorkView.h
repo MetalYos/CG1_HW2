@@ -65,6 +65,8 @@ private:
 	CPoint prevMousePos;
 	// BBOX parameters
 	bool isBBoxOn;
+	// Color dialog flag
+	bool isCColorDialogOpen;
 
 	// Drawing functions
 	int GetOctant(CPoint a, CPoint b);
@@ -176,6 +178,8 @@ public:
 	afx_msg void OnButtonObject();
 	afx_msg void OnUpdateButtonObject(CCmdUI *pCmdUI);
 	afx_msg void OnOptionsPerspectivecontrol();
+	afx_msg void OnActionSelect();
+	afx_msg void OnUpdateActionSelect(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp

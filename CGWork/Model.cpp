@@ -2,21 +2,7 @@
 
 Model::~Model()
 {
-	// free geometries
-	while (geos.size() > 0)
-	{
-		Geometry* geo = geos.back();
-		geos.pop_back();
-		delete geo;
-	}
-
-	// free bounding box vertices
-	while (bbox.size() > 0)
-	{
-		Poly* p = bbox.back();
-		bbox.pop_back();
-		delete p;
-	}
+	DeleteGeometries();
 }
 
 void Model::AddGeometry(Geometry * geo)
@@ -185,4 +171,23 @@ Vec4 Model::GetBBoxCenter() const
 	Vec4 result = minCoord + (maxCoord - minCoord) / 2.0;
 	result[3] = 1.0;
 	return result;
+}
+
+void Model::DeleteGeometries()
+{
+	// free geometries
+	while (geos.size() > 0)
+	{
+		Geometry* geo = geos.back();
+		geos.pop_back();
+		delete geo;
+	}
+
+	// free bounding box vertices
+	while (bbox.size() > 0)
+	{
+		Poly* p = bbox.back();
+		bbox.pop_back();
+		delete p;
+	}
 }

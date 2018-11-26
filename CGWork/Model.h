@@ -44,6 +44,8 @@ public:
 	Vec4 GetBBoxDimensions() const;
 	Vec4 GetBBoxCenter() const;
 	
+	void DeleteGeometries();
+
 	//void Draw();
 };
 

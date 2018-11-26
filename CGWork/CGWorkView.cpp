@@ -85,6 +85,8 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_COMMAND(ID_BUTTON_OBJECT, &CCGWorkView::OnButtonObject)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_OBJECT, &CCGWorkView::OnUpdateButtonObject)
 	ON_COMMAND(ID_OPTIONS_PERSPECTIVECONTROL, &CCGWorkView::OnOptionsPerspectivecontrol)
+	ON_COMMAND(ID_ACTION_SELECT, &CCGWorkView::OnActionSelect)
+	ON_UPDATE_COMMAND_UI(ID_ACTION_SELECT, &CCGWorkView::OnUpdateActionSelect)
 END_MESSAGE_MAP()
 
 // A patch to fix GLaux disappearance from VS2005 to VS2008
@@ -122,11 +124,9 @@ CCGWorkView::CCGWorkView()
 
 	isFirstDraw = true;
 	isBBoxOn = false;
+	isCColorDialogOpen = false;
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
-	//TODO - make sure is set on gui init
-	m_sensitivity = m_sensitivityDialog.GetSensitivity();
-	
 }
 
 CCGWorkView::~CCGWorkView()
@@ -458,8 +458,10 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	{
 		Mat4 transform = model->GetTransform();
 		Mat4 normalTransform = model->GetNormalTransform();
-		Vec4 color = model->GetColor();
-		Vec4 normalColor = model->GetNormalColor();
+		COLORREF color = isCColorDialogOpen ? m_colorDialog.WireframeColor :
+			RGB(model->GetColor()[0], model->GetColor()[1], model->GetColor()[2]);
+		COLORREF normalColor = isCColorDialogOpen ? m_colorDialog.NormalColor :
+			RGB(model->GetNormalColor()[0], model->GetNormalColor()[1], model->GetNormalColor()[2]);
 		for (Geometry* geo : model->GetGeometries())
 		{
 			// Draw Polys
@@ -500,10 +502,10 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
 					if (m_colorDialog.IsDiscoMode) {
-						color = AL_RAINBOW;
+						color = AL_RAINBOW_CREF;
 					}
 
-					poly.push_back({ pix1, pix2 , RGB(color[0], color[1], color[2]) });
+					poly.push_back({ pix1, pix2 , color });
 
 					// Draw vertex normal if needed
 					if (Scene::GetInstance().AreVertexNormalsOn())
@@ -518,7 +520,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 						normal = normal * toView;
 						CPoint nPix2((int)normal[0], (int)normal[1]);
 
-						DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), pix1, nPix2);
+						DrawLine(pDCToUse, normalColor, pix1, nPix2);
 					}
 				}
 				polyCenter /= p->Vertices.size();
@@ -554,7 +556,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint polyCenterPix((int)polyCenter[0], (int)polyCenter[1]);
 					CPoint polyNormPix((int)normal[0], (int)normal[1]);
 
-					DrawLine(pDCToUse, RGB(normalColor[0],normalColor[1],normalColor[2]), polyCenterPix, polyNormPix);
+					DrawLine(pDCToUse, normalColor, polyCenterPix, polyNormPix);
 				}
 			}
 		}
@@ -593,7 +595,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
 					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
-					poly.push_back({ pix1, pix2 , RGB(color[0], color[1], color[2]) });
+					poly.push_back({ pix1, pix2 , color });
 				}
 
 				DrawPoly(pDCToUse, poly);
@@ -648,14 +650,18 @@ void CCGWorkView::OnFileLoad()
 	if (dlg.DoModal () == IDOK) {
 		// Delete previous models
 		Scene::GetInstance().DeleteModels();
+
 		// Create Model
 		Scene::GetInstance().CreateModel();
+
 		// Load model from file
 		m_strItdFileName = dlg.GetPathName();		// Full path and filename
 		PngWrapper p;
 		CGSkelProcessIritDataFiles(m_strItdFileName, 1, m_resolutionDialog.Resolution);
+		
 		// Build Building Box
 		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
+		
 		// Set Camera position
 		Camera* camera = Scene::GetInstance().GetCamera();
 		Model* model = Scene::GetInstance().GetModels().back();
@@ -677,6 +683,9 @@ void CCGWorkView::OnFileLoad()
 		double orthoOffset = 0.5;
 		camera->SetOrthographic(abs(maxDim) + orthoOffset, m_AspectRatio, 1.0, 1000.0);
 		camera->SwitchProjection(m_bIsPerspective);
+
+		// Set ColorDialog model color
+		m_colorDialog.WireframeColor = RGB(model->GetColor()[0], model->GetColor()[1], model->GetColor()[2]);
 
 		Invalidate();	// force a WM_PAINT for drawing.
 	} 
@@ -750,6 +759,17 @@ void CCGWorkView::OnActionScale()
 void CCGWorkView::OnUpdateActionScale(CCmdUI* pCmdUI) 
 {
 	pCmdUI->SetCheck(m_nAction == ID_ACTION_SCALE);
+}
+
+void CCGWorkView::OnActionSelect()
+{
+	m_nAction = ID_ACTION_SELECT;
+}
+
+
+void CCGWorkView::OnUpdateActionSelect(CCmdUI *pCmdUI)
+{
+	pCmdUI->SetCheck(m_nAction == ID_ACTION_SELECT);
 }
 
 
@@ -889,20 +909,16 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 				model->Translate(Mat4::Translate(x_trans, y_trans, z_trans));
 			else
 				camera->Translate(Mat4::Translate(x_trans, y_trans, z_trans));
-			
 		}
 		else if (m_nAction == ID_ACTION_ROTATE)
 		{
 
 			if (m_isAxis_X)
 			{
-			
-			
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
 					model->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));
 				else
-					camera->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));
-					
+					camera->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));	
 			}
 			if (m_isAxis_Y)
 			{
@@ -918,14 +934,16 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 				else
 					camera->Rotate(Mat4::RotateZ(dx / m_sensitivity[1]));
 			}
-
-
 		}
 		else
 		{
 			double x_trans = 1.0 + (m_isAxis_X ? (dx / m_sensitivity[2]) : 0.0);
 			double y_trans = 1.0 + (m_isAxis_Y ? (dx / m_sensitivity[2]) : 0.0);
 			double z_trans = 1.0 + (m_isAxis_Z ? (dx / m_sensitivity[2]) : 0.0);
+
+			x_trans = (x_trans < 0.01) ? 0.01 : x_trans;
+			y_trans = (y_trans < 0.01) ? 0.01 : y_trans;
+			z_trans = (z_trans < 0.01) ? 0.01 : z_trans;
 			
 			if (m_nCoordSpace == ID_BUTTON_OBJECT)
 				model->Scale(Mat4::Scale(x_trans, y_trans, z_trans));
@@ -1027,8 +1045,22 @@ void CCGWorkView::OnNormalFromfile()
 
 void CCGWorkView::OnButtonColors()
 {
+	isCColorDialogOpen = true;
 	if (m_colorDialog.DoModal() == IDOK)
 	{
+		if (Scene::GetInstance().GetModels().size() > 0)
+		{
+			Model* model = Scene::GetInstance().GetModels().back();
+			Vec4 modelColor(GetRValue(m_colorDialog.WireframeColor), GetGValue(m_colorDialog.WireframeColor),
+				GetBValue(m_colorDialog.WireframeColor));
+			Vec4 normColor(GetRValue(m_colorDialog.NormalColor), GetGValue(m_colorDialog.NormalColor),
+				GetBValue(m_colorDialog.NormalColor));
+			model->SetColor(modelColor);
+			model->SetNormalColor(normColor);
+
+			isCColorDialogOpen = false;
+		}
+
 		Invalidate();
 	}
 }
@@ -1048,9 +1080,14 @@ void CCGWorkView::OnOptionsTessellationtolerance()
 	
 	if (m_resolutionDialog.DoModal() == IDOK)
 	{
-		//TODO? - reload image after cleaning up to apply changes
-		/*clearscreen()
-		reloadfile()*/
+		// Delete previous models
+		Scene::GetInstance().GetInstance().GetModels().back()->DeleteGeometries();
+		// Load model from file
+		PngWrapper p;
+		CGSkelProcessIritDataFiles(m_strItdFileName, 1, m_resolutionDialog.Resolution);
+		// Build Building Box
+		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
+
 		Invalidate();
 	}
 }
