@@ -20,6 +20,9 @@
 #include "CColorsDialog.h"
 #include "CPerspectiveDialog.h"
 #include "ALMath.h"
+#include "CSensDialog.h"
+#include "CResolutionDialog.h"
+#include "Vec4.h"
 
 class CCGWorkView : public CView
 {
@@ -35,7 +38,9 @@ public:
 public:
 
 private:
-	int m_nAxis;				// Axis of Action, X Y or Z
+	bool m_isAxis_X;
+	bool m_isAxis_Y;
+	bool m_isAxis_Z;
 	int m_nAction;				// Rotate, Translate, Scale
 	int m_nView;				// Orthographic, perspective
 	bool m_bIsPerspective;			// is the view perspective
@@ -71,6 +76,11 @@ private:
 	//Dialogs
 	CColorsDialog m_colorDialog; 
 	CPerspectiveDialog m_perspDialog;
+	CSensDialog m_sensitivityDialog;
+	CResolutionDialog m_resolutionDialog;
+
+	Vec4 m_sensitivity;
+
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -158,6 +168,8 @@ public:
 	afx_msg void OnUpdateButtonPolyNorm(CCmdUI *pCmdUI);
 	afx_msg void OnButtonColors();
 	afx_msg void OnNormalCalculated();
+	afx_msg void OnUpdateNormalCalculated(CCmdUI *pCmdUI); afx_msg void OnOptionsMousesensitivity();
+	afx_msg void OnOptionsTessellationtolerance();
 	afx_msg void OnNormalFromfile();
 	afx_msg void OnButtonView();
 	afx_msg void OnUpdateButtonView(CCmdUI *pCmdUI);

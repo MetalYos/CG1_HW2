@@ -1,18 +1,50 @@
 Todo List:
 
-1. Fix destructors (instead of  for loop, do a while loop where each iteration pops) - Yossi - DONE.
+-----------------------YOSSI--------------------------------
+
+1. Fix destructors (instead of  for loop, do a while loop where each iteration pops) - Yossi.
 2. Reset the scene after loading a file (update GUI values) - Together.
 3. Each model have a list of geometries (otherwise BBox is wrong, example: cow) - DONE.
 4. Create Perspective projections (using left, right, bottom, up, and using FOV and AspectRatio) - DONE.
 5. Draw BoundingBox - DONE.
 6. Draw Normals - DONE for now (maybe add fix for scaling - low priority).
 7. Add View transformation - Yossi - DONE (except for the the rotation).
-8. Mouse Sensitivity dialog - Ben.
+7. Add View transformation - Yossi.
 9. Normal Calc/File - Yossi - DONE.
-11. Enable more than one axis - Ben (maybe together).
-12. Tessalltion dialog and connection to scene - Ben.
 13. Reload file after tessallation - Yossi (maybe together).
 14. Resizing - Yossi - DONE.
 15. Perspective Control GUI - Yossi - DONE.
 16. Colors dialog connection - Ben.
+
+-----------------------BEN--------------------------------
+
+15. Perspective Control GUI, connections - Together.
+
+12. Tessalltion dialog and connection to scene
+	Need to clear screen and reload file after making change
+	
+11. Enable more than one axis.
+	Z axis SCALE & TRANSFORM on ortho not moving anything - does this make sense?
+	
+8. Mouse Sensitivity dialog
+	Ben, issue with gui updating.
+	
+	
+	2 - 20 tessallation
+	
+	make view object if 
+-----------------------TOGETHER--------------------------------
+
 17. Advanced options - for now the second option - Together.
+2. Reset the scene after loading a file (update GUI values) - Together.
+
+6. Draw Normals - Done for now (maybe add fix for scaling - low priority).
+
+
+
+-----------------------DONE--------------------------------
+
+16. Colors dialog connection - DONE 
+3. Each model have a list of geometries (otherwise BBox is wrong, example: cow) - DONE.
+4. Create Perspective projections (using left, right, bottom, up, and using FOV and AspectRatio) - DONE.
+5. Draw BoundingBox - DONE.
