@@ -39,15 +39,15 @@ Mat4 Camera::GetTranform() const
 	return cTransform;
 }
 
-void Camera::SetOrthographic(double left, double right, double top, double bottom, double near, double far)
+void Camera::SetOrthographic(double left, double right, double top, double bottom, double z_near, double z_far)
 {
 	Mat4 result;
-	result[0][0] = -2.0 / (right - left);
-	result[1][1] = -2.0 / (top - bottom);
-	result[2][3] = 2.0 / (near - far);
+	result[0][0] = 2.0 / (right - left);
+	result[1][1] = 2.0 / (top - bottom);
+	result[2][3] = -2.0 / (z_near - z_far);
 	result[3][0] = -(right + left) / (right - left);
 	result[3][1] = -(top + bottom) / (top - bottom);
-	result[3][2] = (far + near) / (far - near);
+	result[3][2] = (z_far + z_near) / (z_far - z_near);
 
 	projection = result;
 	orthographic = result;
@@ -57,8 +57,8 @@ void Camera::SetOrthographic(double left, double right, double top, double botto
 	orthographicParams.Right = right;
 	orthographicParams.Top = top;
 	orthographicParams.Bottom = bottom;
-	orthographicParams.Near = near;
-	orthographicParams.Far = far;
+	orthographicParams.Near = z_near;
+	orthographicParams.Far = z_far;
 }
 
 void Camera::SetOrthographic(double height, double aspectR, double z_near, double z_far)
@@ -149,7 +149,7 @@ void Camera::LookAt(const Vec4 & eye, const Vec4 & at, const Vec4 & up)
 	v[3] = 0;
 	Mat4 c(u, v, n, Vec4(0.0, 0.0, 0.0, 1.0));
 	c.Transpose();
-	cTransform = c * Mat4::Translate(-eye);
+	cTransform = Mat4::Translate(-eye) * c;
 	cTransform[3][3] = 1.0;
 
 	camParams.Front = n;

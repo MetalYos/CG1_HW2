@@ -473,6 +473,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					// Add edge to poly struct
 					Vec4 pos1 = p->Vertices[i]->Pos;
 					Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
+					polyCenter += pos1;
 
 					Vec4 temp = pos1 * transform * camTransform;
 
@@ -481,6 +482,16 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 					clipped1 /= clipped1[3];
 					clipped2 /= clipped2[3];
+
+					// Basic Z clipping
+					if (camera->IsPerspective())
+					{
+						if ((clipped1[2] < -1.0 && clipped2[2] < -1.0) ||
+							(clipped1[2] > 1.0 && clipped2[2] > 1.0))
+						{
+							continue;
+						}
+					}
 
 					Vec4 pix1Vec(clipped1 * toView);
 					Vec4 pix2Vec(clipped2 * toView);
@@ -505,8 +516,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 						DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), pix1, nPix2);
 					}
-
-					polyCenter += pos1;
 				}
 				polyCenter /= p->Vertices.size();
 
@@ -523,6 +532,15 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					normal = Vec4::Normalize3(normal);
 
 					polyCenter /= polyCenter[3];
+
+					// Basic Z clipping
+					if (camera->IsPerspective())
+					{
+						if (polyCenter[2] < -1.0 && polyCenter[2] > 1.0)
+						{
+							continue;
+						}
+					}
 
 					normal = polyCenter + normal * 0.1;
 
@@ -554,6 +572,16 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 					clipped1 /= clipped1[3];
 					clipped2 /= clipped2[3];
+
+					// Basic Z clipping
+					if (camera->IsPerspective())
+					{
+						if ((clipped1[2] < -1.0 && clipped2[2] < -1.0) ||
+							(clipped1[2] > 1.0 && clipped2[2] > 1.0))
+						{
+							continue;
+						}
+					}
 
 					Vec4 pix1Vec(clipped1 * toView);
 					Vec4 pix2Vec(clipped2 * toView);
@@ -639,7 +667,7 @@ void CCGWorkView::OnFileLoad()
 		}
 		double zPos = abs(radius / f) * offset;
 		Vec4 bboxCenter = model->GetBBoxCenter();
-		camera->LookAt(bboxCenter - Vec4(0.0, 0.0, zPos), bboxCenter, Vec4(0.0, 1.0, 0.0));
+		camera->LookAt(bboxCenter - Vec4(0.0, 0.0, zPos), bboxCenter, Vec4(0.0, -1.0, 0.0));
 
 		// Set orthographic projection dimensions
 		double orthoOffset = 0.5;
