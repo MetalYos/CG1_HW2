@@ -77,6 +77,8 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_POLY_NORM, &CCGWorkView::OnUpdateButtonPolyNorm)
 	ON_COMMAND(ID_NORMAL_CALCULATED, &CCGWorkView::OnNormalCalculated)
 	ON_COMMAND(ID_BUTTON_COLORS, &CCGWorkView::OnButtonColors)
+	ON_COMMAND(ID_OPTIONS_MOUSESENSITIVITY, &CCGWorkView::OnOptionsMousesensitivity)
+	ON_COMMAND(ID_OPTIONS_TESSELLATIONTOLERANCE, &CCGWorkView::OnOptionsTessellationtolerance)
 	ON_COMMAND(ID_NORMAL_FROMFILE, &CCGWorkView::OnNormalFromfile)
 	ON_COMMAND(ID_BUTTON_VIEW, &CCGWorkView::OnButtonView)
 	ON_UPDATE_COMMAND_UI(ID_BUTTON_VIEW, &CCGWorkView::OnUpdateButtonView)
@@ -99,7 +101,9 @@ void auxSolidCone(GLdouble radius, GLdouble height) {
 CCGWorkView::CCGWorkView()
 {
 	// Set default values
-	m_nAxis = ID_AXIS_X;
+	m_isAxis_X = true;
+	m_isAxis_Y = false;
+	m_isAxis_Z = false;
 	m_nAction = ID_ACTION_ROTATE;
 	m_nView = ID_VIEW_ORTHOGRAPHIC;	
 	m_bIsPerspective = false;
@@ -120,6 +124,9 @@ CCGWorkView::CCGWorkView()
 	isBBoxOn = false;
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
+	//TODO - make sure is set on gui init
+	m_sensitivity = m_sensitivityDialog.GetSensitivity();
+	
 }
 
 CCGWorkView::~CCGWorkView()
@@ -414,8 +421,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		// Get Viewport parameters
 		m_WindowWidth = r.Width();
 		m_WindowHeight = r.Height();
-		m_AspectRatio = m_WindowWidth / m_WindowHeight;
-
+		m_AspectRatio = (double)m_WindowWidth / (double)m_WindowHeight;
+		
 		// Set initial Projection matricies
 		double width = orthoHeight * m_AspectRatio;
 		Scene::GetInstance().GetCamera()->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
@@ -428,20 +435,13 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		isFirstDraw = false;
 	}
 	
-	Vec4 bgColor = Scene::GetInstance().GetBackgroundColor();
-	COLORREF bGColorRef = RGB((int)bgColor[0], (int)bgColor[1], (int)bgColor[2]);
+	//TODO - add these actions to an init function - real background color should be stored in CColorsDialog
+	//Vec4 bgColor = Scene::GetInstance().GetBackgroundColor();
+	//COLORREF bGColorRef = RGB((int)bgColor[0], (int)bgColor[1], (int)bgColor[2]);
+
+	COLORREF bGColorRef = m_colorDialog.BackgroundColor;
 	pDCToUse->FillSolidRect(&r, bGColorRef);
-	/*
-	Vec4 bgColor = Scene::GetInstance().GetBackgroundColor();
-	COLORREF bGColorRef = RGB((int)bgColor[0], (int)bgColor[1], (int)bgColor[2]);
-	for (int x = r.left; x < r.right; x++)
-	{
-		for (int y = r.top; y < r.bottom; y++)
-		{
-			pDCToUse->SetPixel(x, y, bGColorRef);
-		}
-	}
-	*/
+
 	
 	std::vector<Model*> models = Scene::GetInstance().GetModels();
 	Camera* camera = Scene::GetInstance().GetCamera();
@@ -456,8 +456,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	
 	for (Model* model : models)
 	{
-		Vec4 bboxC = model->GetBBoxCenter() * model->GetTransform() * camera->GetTranform();
-
 		Mat4 transform = model->GetTransform();
 		Mat4 normalTransform = model->GetNormalTransform();
 		Vec4 color = model->GetColor();
@@ -501,6 +499,10 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
 					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
+					if (m_colorDialog.IsDiscoMode) {
+						color = AL_RAINBOW;
+					}
+
 					poly.push_back({ pix1, pix2 , RGB(color[0], color[1], color[2]) });
 
 					// Draw vertex normal if needed
@@ -534,7 +536,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					normal = Vec4::Normalize3(normal);
 
 					polyCenter /= polyCenter[3];
-
+					
 					// Basic Z clipping
 					if (camera->IsPerspective())
 					{
@@ -552,7 +554,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					CPoint polyCenterPix((int)polyCenter[0], (int)polyCenter[1]);
 					CPoint polyNormPix((int)normal[0], (int)normal[1]);
 
-					DrawLine(pDCToUse, RGB(normalColor[0], normalColor[1], normalColor[2]), polyCenterPix, polyNormPix);
+					DrawLine(pDCToUse, RGB(normalColor[0],normalColor[1],normalColor[2]), polyCenterPix, polyNormPix);
 				}
 			}
 		}
@@ -651,7 +653,7 @@ void CCGWorkView::OnFileLoad()
 		// Load model from file
 		m_strItdFileName = dlg.GetPathName();		// Full path and filename
 		PngWrapper p;
-		CGSkelProcessIritDataFiles(m_strItdFileName, 1);
+		CGSkelProcessIritDataFiles(m_strItdFileName, 1, m_resolutionDialog.Resolution);
 		// Build Building Box
 		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
 		// Set Camera position
@@ -661,11 +663,11 @@ void CCGWorkView::OnFileLoad()
 		double maxDim = max(max(bboxDim[0], bboxDim[1]), bboxDim[2]);
 		double radius = maxDim / 2.0;
 		double f = tan(ToRadians(camera->GetPerspectiveParameters().FOV / 2.0));
-		double offset = 1.5;
+		double offset = 2.0;
 		if (bboxDim[0] > bboxDim[1])
 		{
 			f = tan(ToRadians(m_AspectRatio * camera->GetPerspectiveParameters().FOV / 2.0));
-			offset = 2.0;
+			offset = 2.5;
 		}
 		double zPos = abs(radius / f) * offset;
 		Vec4 bboxCenter = model->GetBBoxCenter();
@@ -761,7 +763,7 @@ void CCGWorkView::OnUpdateActionScale(CCmdUI* pCmdUI)
 // selected axis.
 void CCGWorkView::OnAxisX() 
 {
-	m_nAxis = ID_AXIS_X;
+	m_isAxis_X = !m_isAxis_X;
 }
 
 // Gets called when windows has to repaint either the X button or the Axis pop up menu.
@@ -770,29 +772,29 @@ void CCGWorkView::OnAxisX()
 // It sets itself Checked if the current axis is the X axis.
 void CCGWorkView::OnUpdateAxisX(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(m_nAxis == ID_AXIS_X);
+	pCmdUI->SetCheck(m_isAxis_X);
 }
 
 
 void CCGWorkView::OnAxisY() 
 {
-	m_nAxis = ID_AXIS_Y;
+	m_isAxis_Y = !m_isAxis_Y;
 }
 
 void CCGWorkView::OnUpdateAxisY(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(m_nAxis == ID_AXIS_Y);
+	pCmdUI->SetCheck(m_isAxis_Y);
 }
 
 
 void CCGWorkView::OnAxisZ() 
 {
-	m_nAxis = ID_AXIS_Z;
+	m_isAxis_Z = !m_isAxis_Z;
 }
 
 void CCGWorkView::OnUpdateAxisZ(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck(m_nAxis == ID_AXIS_Z);
+	pCmdUI->SetCheck(m_isAxis_Z);
 }
 
 
@@ -866,7 +868,6 @@ void CCGWorkView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 {
-	Vec4 sensitivity = Vec4(100.0, 50.0, 100.0);
 	double dx = point.x - prevMousePos.x;
 	double dy = point.y - prevMousePos.y;
 
@@ -880,75 +881,56 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 
 		if (m_nAction == ID_ACTION_TRANSLATE)
 		{
-			if (m_nAxis == ID_AXIS_X)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Translate(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
-				else
-					camera->Translate(Mat4::Translate(dx / sensitivity[0], 0.0, 0.0));
-			}
-			if (m_nAxis == ID_AXIS_Y)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Translate(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
-				else
-					camera->Translate(Mat4::Translate(0.0, dx / sensitivity[0], 0.0));
-			}
-			if (m_nAxis == ID_AXIS_Z)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Translate(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
-				else
-					camera->Translate(Mat4::Translate(0.0, 0.0, dx / sensitivity[0]));
-			}
+			double x_trans = m_isAxis_X ? dx / m_sensitivity[0] : 0.0;
+			double y_trans = m_isAxis_Y ? dx / m_sensitivity[0] : 0.0;
+			double z_trans = m_isAxis_Z ? dx / m_sensitivity[0] : 0.0;
+
+			if (m_nCoordSpace == ID_BUTTON_OBJECT) 
+				model->Translate(Mat4::Translate(x_trans, y_trans, z_trans));
+			else
+				camera->Translate(Mat4::Translate(x_trans, y_trans, z_trans));
+			
 		}
 		else if (m_nAction == ID_ACTION_ROTATE)
 		{
-			if (m_nAxis == ID_AXIS_X)
+
+			if (m_isAxis_X)
+			{
+			
+			
+				if (m_nCoordSpace == ID_BUTTON_OBJECT)
+					model->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));
+				else
+					camera->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));
+					
+			}
+			if (m_isAxis_Y)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Rotate(Mat4::RotateX(dx / sensitivity[1]));
+					model->Rotate(Mat4::RotateY(dx / m_sensitivity[1]));
 				else
-					camera->Rotate(Mat4::RotateX(dx / sensitivity[1]));
+					camera->Rotate(Mat4::RotateY(dx / m_sensitivity[1]));
 			}
-			if (m_nAxis == ID_AXIS_Y)
+			if (m_isAxis_Z)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Rotate(Mat4::RotateY(dx / sensitivity[1]));
+					model->Rotate(Mat4::RotateZ(dx / m_sensitivity[1]));
 				else
-					camera->Rotate(Mat4::RotateY(dx / sensitivity[1]));
+					camera->Rotate(Mat4::RotateZ(dx / m_sensitivity[1]));
 			}
-			if (m_nAxis == ID_AXIS_Z)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Rotate(Mat4::RotateZ(dx / sensitivity[1]));
-				else
-					camera->Rotate(Mat4::RotateZ(dx / sensitivity[1]));
-			}
+
+
 		}
 		else
 		{
-			if (m_nAxis == ID_AXIS_X)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Scale(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
-				else
-					camera->Scale(Mat4::Scale(1.0 + (dx / sensitivity[2]), 1.0, 1.0));
-			}
-			if (m_nAxis == ID_AXIS_Y)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Scale(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
-				else
-					camera->Scale(Mat4::Scale(1.0, 1.0 + (dx / sensitivity[2]), 1.0));
-			}
-			if (m_nAxis == ID_AXIS_Z)
-			{
-				if (m_nCoordSpace == ID_BUTTON_OBJECT)
-					model->Scale(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
-				else
-					camera->Scale(Mat4::Scale(1.0, 1.0, 1.0 + (dx / sensitivity[2])));
-			}
+			double x_trans = 1.0 + (m_isAxis_X ? (dx / m_sensitivity[2]) : 0.0);
+			double y_trans = 1.0 + (m_isAxis_Y ? (dx / m_sensitivity[2]) : 0.0);
+			double z_trans = 1.0 + (m_isAxis_Z ? (dx / m_sensitivity[2]) : 0.0);
+			
+			if (m_nCoordSpace == ID_BUTTON_OBJECT)
+				model->Scale(Mat4::Scale(x_trans, y_trans, z_trans));
+			else
+				camera->Scale(Mat4::Scale(x_trans, y_trans, z_trans));
 		}
 	}
 
@@ -1047,6 +1029,28 @@ void CCGWorkView::OnButtonColors()
 {
 	if (m_colorDialog.DoModal() == IDOK)
 	{
+		Invalidate();
+	}
+}
+
+void CCGWorkView::OnOptionsMousesensitivity()
+{
+	if (m_sensitivityDialog.DoModal() == IDOK)
+	{
+		m_sensitivity = m_sensitivityDialog.GetSensitivity();
+		Invalidate();
+	}
+}
+
+
+void CCGWorkView::OnOptionsTessellationtolerance()
+{
+	
+	if (m_resolutionDialog.DoModal() == IDOK)
+	{
+		//TODO? - reload image after cleaning up to apply changes
+		/*clearscreen()
+		reloadfile()*/
 		Invalidate();
 	}
 }
