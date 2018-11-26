@@ -7,6 +7,22 @@ Todo List:
 17. Advanced options - for now the second option - Together.
 
 
+New Parameters 
+	For each polygon isSelected flag
+	
+On Mouse click while on select mode
+	convert mouse position from screen space to view space
+	fire the a ray from camera to mouse position
+		for every polygon
+			set flag = isHit
+		
+Meanwhile in onDraw
+	if on select && Poly.isSelected
+		EdgeColor = rgb( (WireframeColor + 128) % 255)
+
+
+
+
 -----------------------DONE--------------------------------
 6. Draw Normals - DONE for now (maybe add fix for scaling - low priority).
 
@@ -33,3 +49,6 @@ Todo List:
 14. Resizing - Yossi - DONE.
 15. Perspective Control GUI - Yossi - DONE.
 16. Colors dialog connection - Ben.
+
+
+
