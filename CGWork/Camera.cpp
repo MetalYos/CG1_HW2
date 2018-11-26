@@ -1,7 +1,5 @@
 #include "Camera.h"
 
-
-
 Camera::Camera() : isPerspective(false)
 {
 }
@@ -13,25 +11,32 @@ Camera::~Camera()
 
 void Camera::Translate(Mat4& T)
 {
-	T[3][0] = -T[3][0];
-	T[3][1] = -T[3][1];
-	T[3][2] = -T[3][2];
+	//T[3][0] = -T[3][0];
+	//T[3][1] = -T[3][1];
+	//T[3][2] = -T[3][2];
 	cTransform = cTransform * T;
 }
 
 void Camera::Scale(Mat4& S)
 {
-	S[0][0] = 1.0 / S[0][0];
-	S[1][1] = 1.0 / S[1][1];
-	S[2][2] = 1.0 / S[2][2];
+	//S[0][0] = 1.0 / S[0][0];
+	//S[1][1] = 1.0 / S[1][1];
+	//S[2][2] = 1.0 / S[2][2];
 	cTransform = cTransform * S;
 }
 
-void Camera::Rotate(Mat4& R)
+void Camera::Rotate(Mat4& R, bool aroundEye)
 {
-	// Need to fix rotation
-	//R.Transpose();
-	cTransform = R * cTransform; // * R;
+	if (aroundEye)
+	{
+		Vec4 origin = camParams.EyeCam;
+		Mat4 T = Mat4::Translate(origin) * R * Mat4::Translate(-origin);
+		cTransform = cTransform * T;
+	}
+	else
+	{
+		cTransform = cTransform * R;
+	}
 }
 
 Mat4 Camera::GetTranform() const
@@ -152,6 +157,8 @@ void Camera::LookAt(const Vec4 & eye, const Vec4 & at, const Vec4 & up)
 	cTransform = Mat4::Translate(-eye) * c;
 	cTransform[3][3] = 1.0;
 
+	camParams.Eye = eye;
+	camParams.EyeCam = eye * cTransform;
 	camParams.Front = n;
 	camParams.Side = u;
 	camParams.Up = v;

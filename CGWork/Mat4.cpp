@@ -182,7 +182,9 @@ Mat4 Mat4::Translate(double x, double y, double z)
 Mat4 Mat4::Translate(const Vec4 & v)
 {
 	Mat4 result;
-	result[3] = v;
+	result[3][0] = v[0];
+	result[3][1] = v[1];
+	result[3][2] = v[2];
 	return result;
 }
 

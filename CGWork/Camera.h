@@ -26,6 +26,8 @@ struct OrthographicParams
 
 struct CameraParameters
 {
+	Vec4 Eye;
+	Vec4 EyeCam;
 	Vec4 Front;
 	Vec4 Side;
 	Vec4 Up;
@@ -51,7 +53,7 @@ public:
 
 	void Translate(Mat4& T);
 	void Scale(Mat4& S);
-	void Rotate(Mat4& R);
+	void Rotate(Mat4& R, bool aroundEye = true);
 	Mat4 GetTranform() const;
 
 	void SetOrthographic(double left, double right, double top, double bottom, double z_near, double z_far);

@@ -456,6 +456,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	
 	for (Model* model : models)
 	{
+		Vec4 bboxC = model->GetBBoxCenter() * model->GetTransform() * camera->GetTranform();
+
 		Mat4 transform = model->GetTransform();
 		Mat4 normalTransform = model->GetNormalTransform();
 		Vec4 color = model->GetColor();
@@ -864,7 +866,6 @@ void CCGWorkView::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 {
-	double transSensitivity = 100.0;
 	Vec4 sensitivity = Vec4(100.0, 50.0, 100.0);
 	double dx = point.x - prevMousePos.x;
 	double dy = point.y - prevMousePos.y;
