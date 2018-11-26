@@ -69,13 +69,10 @@
     <ClCompile Include="CPerspectiveDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CSensitivityDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CSensDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CResolutionDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CSensitivityDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -217,13 +214,10 @@
     <ClInclude Include="CPerspectiveDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CSensitivityDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CSensDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CResolutionDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CSensitivityDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

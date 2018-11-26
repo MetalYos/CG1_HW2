@@ -20,7 +20,7 @@
 #include "CColorsDialog.h"
 #include "CPerspectiveDialog.h"
 #include "ALMath.h"
-#include "CSensDialog.h"
+#include "CSensitivityDialog.h"
 #include "CResolutionDialog.h"
 #include "Vec4.h"
 
@@ -78,7 +78,7 @@ private:
 	//Dialogs
 	CColorsDialog m_colorDialog; 
 	CPerspectiveDialog m_perspDialog;
-	CSensDialog m_sensitivityDialog;
+	CSensitivityDialog m_sensitivityDialog;
 	CResolutionDialog m_resolutionDialog;
 
 	Vec4 m_sensitivity;

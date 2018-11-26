@@ -18,7 +18,7 @@
     <ProjectGuid>{C87C313E-8194-45E7-8BB6-936D93F21F13}</ProjectGuid>
     <RootNamespace>CGWork</RootNamespace>
     <Keyword>MFCProj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -194,7 +194,6 @@
     </ClCompile>
     <ClCompile Include="CPerspectiveDialog.cpp" />
     <ClCompile Include="CResolutionDialog.cpp" />
-    <ClCompile Include="CSensDialog.cpp" />
     <ClCompile Include="CSensitivityDialog.cpp" />
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="iritSkel.cpp" />
@@ -240,7 +239,6 @@
     <ClInclude Include="CGWorkView.h" />
     <ClInclude Include="CPerspectiveDialog.h" />
     <ClInclude Include="CResolutionDialog.h" />
-    <ClInclude Include="CSensDialog.h" />
     <ClInclude Include="CSensitivityDialog.h" />
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="iritSkel.h" />

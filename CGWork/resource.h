@@ -8,10 +8,10 @@
 #define IDD_LIGHTS_DLG                  134
 #define IDD_MATERIAL_DLG                136
 #define IDD_COLOR_DLG                   139
-#define IDD_SENSITIVITY_DLG             140
 #define IDD_PRESPECTIVE_DIALOG          141
 #define IDD_SENS_DLG                    142
 #define IDD_RESOLUTION_DLG              143
+#define IDD_SENSITIVITY_DLG             145
 #define IDC_LIGHT_SPACE                 1010
 #define IDC_RADIO_LIGHT1                1017
 #define IDC_RADIO_LIGHT2                1018
@@ -48,10 +48,10 @@
 #define IDC_EDIT2                       1046
 #define IDC_EDIT_FOV                    1046
 #define IDC_EDIT_FAR                    1047
-#define IDC_ROTATION_SENS_SLIDER        1050
-#define IDC_TRANSLATION_SENS_SLIDER     1053
-#define IDC_SCALING_SENS_SLIDER         1054
 #define IDC_EDIT_TESS                   1056
+#define IDC_EDIT_ROT                    1057
+#define IDC_EDIT_TRANS                  1058
+#define IDC_EDIT_SCALE                  1059
 #define ID_FILE_LOAD                    32771
 #define ID_VIEW_ORTHOGRAPHIC            32772
 #define ID_VIEW_PERSPECTIVE             32773
@@ -86,16 +86,16 @@
 #define ID_OPTIONS_TESSELLATIONTOLERANCE 32810
 #define ID_BUTTON32812                  32812
 #define ID_BUTTON_COLORS                32813
-#define ID_ACTION_SELECT                32816
-#define ID_ACTION_SELECT32817           32817
+#define ID_ACTION_SELECT                32818
+#define ID_ACTION_SELECT32819           32819
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32818
-#define _APS_NEXT_CONTROL_VALUE         1057
+#define _APS_NEXT_RESOURCE_VALUE        147
+#define _APS_NEXT_COMMAND_VALUE         32820
+#define _APS_NEXT_CONTROL_VALUE         1058
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
