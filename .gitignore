@@ -5,10 +5,11 @@ CGWork/Release/
 # .vs folder
 CGWork/.vs/
 
-# debugging
+# debugging and bin folder
 *.pdb
 bin/Debug/*.ilk
 bin/Debug/*.pdb
+bin/Release/*.bsc
 
 # Prerequisites
 *.d
