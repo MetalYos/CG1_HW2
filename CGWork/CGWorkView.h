@@ -23,6 +23,12 @@
 #include "CSensitivityDialog.h"
 #include "CResolutionDialog.h"
 #include "Vec4.h"
+#include "Geometry.h"
+
+struct Edge {
+	CPoint a, b;
+	COLORREF color;
+};
 
 class CCGWorkView : public CView
 {
@@ -61,12 +67,17 @@ private:
 
 	// Orthographic projection height
 	double orthoHeight;
-	// Mouse pos
-	CPoint prevMousePos;
 	// BBOX parameters
 	bool isBBoxOn;
 	// Color dialog flag
 	bool isCColorDialogOpen;
+	// Mouse click bool
+	bool mouseClicked;
+	CPoint prevMousePos;
+	CPoint mouseClickPos;
+
+	// Quick hack
+	std::vector< std::vector<Edge> > selectedPolys;
 
 	// Drawing functions
 	int GetOctant(CPoint a, CPoint b);
@@ -74,6 +85,8 @@ private:
 	CPoint TranslateBToFirstOctant(const CPoint& a, const CPoint& b, int oct);
 	CPoint TranslatePointFrom8th(CPoint p, int oct);
 	CPoint TranslatePointTo8th(CPoint p, int oct);
+	void SetSelectedPolys(CPoint mousePos, Poly* p, std::vector< std::vector<int> > poly);
+	void DrawSelectedPolys(CDC* pDC);
 
 	//Dialogs
 	CColorsDialog m_colorDialog; 
@@ -87,12 +100,7 @@ private:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CCGWorkView)
-	public:
-
-	struct Edge {
-		CPoint a, b;
-		COLORREF color;
-	};
+public:
 
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);

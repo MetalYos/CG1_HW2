@@ -3,6 +3,7 @@
 #include "ALMath.h"
 #include <vector>
 #include <unordered_map>
+
 class Vec4Hash
 {
 public:

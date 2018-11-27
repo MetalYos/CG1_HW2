@@ -125,6 +125,8 @@ CCGWorkView::CCGWorkView()
 	isFirstDraw = true;
 	isBBoxOn = false;
 	isCColorDialogOpen = false;
+	mouseClicked = false;
+	m_sensitivity = Vec4(150, 150, 300);
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
 }
@@ -298,6 +300,31 @@ CPoint CCGWorkView::TranslatePointTo8th(CPoint p, int oct)
 	return TranslatePointFrom8th(p, oct);
 }
 
+void CCGWorkView::SetSelectedPolys(CPoint mousePos, Poly* p, std::vector< std::vector<int> > poly)
+{
+	std::vector<int> point;
+	point.push_back(mousePos.x);
+	point.push_back(mousePos.y);
+
+	if (PointPolyIntersection(point, poly))
+		p->IsSelected = true;
+	else
+		p->IsSelected = false;
+}
+
+void CCGWorkView::DrawSelectedPolys(CDC* pDC)
+{
+	for (std::vector<Edge>& poly : selectedPolys)
+	{
+		for (Edge& edge : poly)
+		{
+			edge.color = AL_YELLO_CREF;
+		}
+		DrawPoly(pDC, poly);
+	}
+	selectedPolys.clear();
+}
+
 int CCGWorkView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
 	if (CView::OnCreate(lpCreateStruct) == -1)
@@ -456,6 +483,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		Mat4 normalTransform = model->GetNormalTransform();
 		COLORREF color = isCColorDialogOpen ? m_colorDialog.WireframeColor :
 			RGB(model->GetColor()[0], model->GetColor()[1], model->GetColor()[2]);
+		COLORREF selectedColor = RGB((BYTE)(model->GetColor()[0] + 128) % 256,
+			(BYTE)(model->GetColor()[1] + 128) % 256, (BYTE)(model->GetColor()[2] + 128) % 256);
 		COLORREF normalColor = isCColorDialogOpen ? m_colorDialog.NormalColor :
 			RGB(model->GetNormalColor()[0], model->GetNormalColor()[1], model->GetNormalColor()[2]);
 		for (Geometry* geo : model->GetGeometries())
@@ -482,13 +511,10 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					clipped2 /= clipped2[3];
 
 					// Basic Z clipping
-					if (camera->IsPerspective())
+					if ((clipped1[2] < -1.0 && clipped2[2] < -1.0) ||
+						(clipped1[2] > 1.0 && clipped2[2] > 1.0))
 					{
-						if ((clipped1[2] < -1.0 && clipped2[2] < -1.0) ||
-							(clipped1[2] > 1.0 && clipped2[2] > 1.0))
-						{
-							continue;
-						}
+						continue;
 					}
 
 					Vec4 pix1Vec(clipped1 * toView);
@@ -520,6 +546,24 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					}
 				}
 				polyCenter /= p->Vertices.size();
+
+				// If mouse button was clicked in Select mode perform intersection caculation
+				if (mouseClicked)
+				{
+					std::vector< std::vector<int> > polyInts;
+					for (unsigned int k = 0; k < poly.size(); k++)
+					{
+						std::vector<int> temp;
+						temp.push_back(poly[k].a.x);
+						temp.push_back(poly[k].a.y);
+						polyInts.push_back(temp);
+					}
+					SetSelectedPolys(mouseClickPos, p, polyInts);
+				}
+
+				// If the poly was selected, save it in the selectedPolys list
+				if (p->IsSelected)
+					selectedPolys.push_back(poly);
 
 				DrawPoly(pDCToUse, poly);
 
@@ -555,7 +599,12 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					DrawLine(pDCToUse, normalColor, polyCenterPix, polyNormPix);
 				}
 			}
+
+			// Reset mouseclicked flag
+			mouseClicked = false;
 		}
+
+		DrawSelectedPolys(pDCToUse);
 
 		// Draw Bounding Box
 		if (Scene::GetInstance().GetBBoxState())
@@ -881,10 +930,14 @@ void CCGWorkView::OnLButtonDown(UINT nFlags, CPoint point)
 
 	if (m_nAction == ID_ACTION_SELECT && Scene::GetInstance().GetModels().size() > 0)
 	{
-		// TODO: check what polygons intersect with mouse
+		mouseClicked = true;
+		mouseClickPos = point;
+		selectedPolys.clear();
 	}
 
 	CView::OnLButtonDown(nFlags, point);
+
+	Invalidate();
 }
 
 void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
@@ -936,7 +989,7 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 					camera->Rotate(Mat4::RotateZ(dx / m_sensitivity[1]));
 			}
 		}
-		else
+		else if (m_nAction == ID_ACTION_SCALE)
 		{
 			double x_trans = 1.0 + (m_isAxis_X ? (dx / m_sensitivity[2]) : 0.0);
 			double y_trans = 1.0 + (m_isAxis_Y ? (dx / m_sensitivity[2]) : 0.0);
