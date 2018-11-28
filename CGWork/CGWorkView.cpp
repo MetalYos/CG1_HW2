@@ -126,7 +126,7 @@ CCGWorkView::CCGWorkView()
 	isBBoxOn = false;
 	isCColorDialogOpen = false;
 	mouseClicked = false;
-	m_sensitivity = Vec4(150, 150, 300);
+	m_sensitivity = Vec4(100, 150, 300);
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
 }
@@ -354,7 +354,7 @@ BOOL CCGWorkView::InitializeCGWork()
 	m_pDbBitMap = CreateCompatibleBitmap(m_pDC->m_hDC, r.right, r.bottom);	
 	m_pDbDC->SelectObject(m_pDbBitMap);
 
-	Scene::GetInstance().GetCamera()->LookAt(Vec4(0.0, 0.0, 5.0), Vec4(0.0, 0.0, 1.0), Vec4(0.0, 1.0, 0.0));
+	//Scene::GetInstance().GetCamera()->LookAt(Vec4(0.0, 0.0, 5.0), Vec4(0.0, 0.0, 1.0), Vec4(0.0, 1.0, 0.0));
 
 	return TRUE;
 }
@@ -703,15 +703,28 @@ void CCGWorkView::OnFileLoad()
 		m_strItdFileName = dlg.GetPathName();		// Full path and filename
 		PngWrapper p;
 		CGSkelProcessIritDataFiles(m_strItdFileName, 1, m_resolutionDialog.Resolution);
-		
-		// Build Building Box
-		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
-		
-		// Set Camera position
+
+		// Get New Model and Camera
 		Camera* camera = Scene::GetInstance().GetCamera();
 		Model* model = Scene::GetInstance().GetModels().back();
+		
+		// Build Building Box
+		model->BuildBoundingBox();
+		// Get Bounding Box dimensions
 		Vec4 bboxDim = model->GetBBoxDimensions();
 		double maxDim = max(max(bboxDim[0], bboxDim[1]), bboxDim[2]);
+
+		// Set Perspective projection
+		camera->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
+
+		// Set orthographic projection dimensions
+		double orthoOffset = 0.5;
+		camera->SetOrthographic(abs(maxDim) + orthoOffset, m_AspectRatio, 1.0, 1000.0);
+
+		// Switch camera to the correct projection (the one that is selected)
+		camera->SwitchProjection(m_bIsPerspective);
+		
+		// Set Camera position
 		double radius = maxDim / 2.0;
 		double f = tan(ToRadians(camera->GetPerspectiveParameters().FOV / 2.0));
 		double offset = 2.0;
@@ -723,11 +736,6 @@ void CCGWorkView::OnFileLoad()
 		double zPos = abs(radius / f) * offset;
 		Vec4 bboxCenter = model->GetBBoxCenter();
 		camera->LookAt(bboxCenter - Vec4(0.0, 0.0, zPos), bboxCenter, Vec4(0.0, -1.0, 0.0));
-
-		// Set orthographic projection dimensions
-		double orthoOffset = 0.5;
-		camera->SetOrthographic(abs(maxDim) + orthoOffset, m_AspectRatio, 1.0, 1000.0);
-		camera->SwitchProjection(m_bIsPerspective);
 
 		// Set ColorDialog model color
 		m_colorDialog.WireframeColor = RGB(model->GetColor()[0], model->GetColor()[1], model->GetColor()[2]);
