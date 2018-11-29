@@ -75,6 +75,8 @@ private:
 	bool mouseClicked;
 	CPoint prevMousePos;
 	CPoint mouseClickPos;
+	// Normal size factor
+	double normalSizeFactor;
 
 	// Quick hack
 	std::vector< std::vector<Edge> > selectedPolys;

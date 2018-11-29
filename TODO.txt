@@ -2,7 +2,6 @@ Todo List:
 
 -----------------------TODO----------------------------------
 1. Comment the hell out of the code.
-2. Change it so the tessellation parameter is from view (in case it is not allowed to change a signature of a function from irit).
 3. Add a button to control if Rot/Scale in View space is around camera or object.
 4. Add a button (or menu option) to control normal size factor.
 5. Save color in Geometry as well and add a button to see color per geo or of the whole model.
@@ -12,6 +11,7 @@ Todo List:
 
 
 -----------------------DONE--------------------------------
+2. Change it so the tessellation parameter is from view (in case it is not allowed to change a signature of a function from irit).
 17. Advanced options - for now the second option - Together.
 6. Draw Normals - DONE for now (maybe add fix for scaling - low priority).
 7. Add View transformation - Yossi - Fix scaling in view space

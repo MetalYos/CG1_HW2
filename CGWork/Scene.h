@@ -17,6 +17,7 @@ private:
 	bool polyNormals;
 	bool isCalcNormal;
 	Vec4 bgColor;
+	int fineNess;
 
 	Scene();
 
@@ -47,6 +48,9 @@ public:
 
 	void SetCalcNormalState(bool isCalcNorm);
 	bool GetCalcNormalState() const;
+
+	void SetFineNess(int fineNess);
+	int GetFineNess() const;
 
 	void DeleteModels();
 	//void Draw(); // TODO: Implement draw (will call do all the matrix multiplications and call renderer)

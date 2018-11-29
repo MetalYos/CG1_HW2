@@ -129,6 +129,7 @@ CCGWorkView::CCGWorkView()
 	m_sensitivity = Vec4(100, 150, 300);
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
+	normalSizeFactor = 0.1;
 }
 
 CCGWorkView::~CCGWorkView()
@@ -537,7 +538,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 						normal = normal * transform * camTransform * projection;
 						normal = Vec4::Normalize3(normal);
 
-						normal = clipped1 + normal * 0.1;
+						normal = clipped1 + normal * normalSizeFactor;
 
 						normal = normal * toView;
 						CPoint nPix2((int)normal[0], (int)normal[1]);
@@ -588,7 +589,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 						}
 					}
 
-					normal = polyCenter + normal * 0.1;
+					normal = polyCenter + normal * normalSizeFactor;
 
 					polyCenter = polyCenter * toView;
 					normal = normal * toView;
@@ -702,7 +703,7 @@ void CCGWorkView::OnFileLoad()
 		// Load model from file
 		m_strItdFileName = dlg.GetPathName();		// Full path and filename
 		PngWrapper p;
-		CGSkelProcessIritDataFiles(m_strItdFileName, 1, m_resolutionDialog.Resolution);
+		CGSkelProcessIritDataFiles(m_strItdFileName, 1);
 
 		// Get New Model and Camera
 		Camera* camera = Scene::GetInstance().GetCamera();
@@ -1142,11 +1143,13 @@ void CCGWorkView::OnOptionsTessellationtolerance()
 	
 	if (m_resolutionDialog.DoModal() == IDOK)
 	{
+		// Save fineness in Scene
+		Scene::GetInstance().SetFineNess(m_resolutionDialog.Resolution);
 		// Delete previous models
 		Scene::GetInstance().GetInstance().GetModels().back()->DeleteGeometries();
 		// Load model from file
 		PngWrapper p;
-		CGSkelProcessIritDataFiles(m_strItdFileName, 1, m_resolutionDialog.Resolution);
+		CGSkelProcessIritDataFiles(m_strItdFileName, 1);
 		// Build Building Box
 		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
 

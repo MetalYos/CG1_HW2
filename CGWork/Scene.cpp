@@ -3,7 +3,7 @@
 
 
 Scene::Scene() : camera(new Camera()), isBBoxOn(false), vertexNormals(false), 
-	polyNormals(false), isCalcNormal(true), bgColor((AL_BLACK))
+	polyNormals(false), isCalcNormal(true), bgColor((AL_BLACK)), fineNess(20)
 {
 }
 
@@ -69,6 +69,16 @@ void Scene::SetCalcNormalState(bool isCalcNorm)
 bool Scene::GetCalcNormalState() const
 {
 	return isCalcNormal;
+}
+
+void Scene::SetFineNess(int fineNess)
+{
+	this->fineNess = fineNess;
+}
+
+int Scene::GetFineNess() const
+{
+	return fineNess;
 }
 
 void Scene::DeleteModels()
