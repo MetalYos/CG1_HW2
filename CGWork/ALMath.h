@@ -4,7 +4,7 @@
 #include "Mat4.h"
 #include <vector>
 
-#define AL_DBL_EPSILON 0.000001
+#define AL_DBL_EPSILON 0.00000001
 #define AL_PI 3.14159265359
 
 #define AL_WHITE Vec4(255, 255, 255)
@@ -16,6 +16,12 @@
 
 #define AL_YELLO_CREF	RGB(255, 255, 0)
 #define AL_RAINBOW_CREF RGB((BYTE)rand() % 255, (BYTE)rand() % 255, (BYTE)rand() % 255)
+
+struct Vec4Line
+{
+	Vec4 P1;
+	Vec4 P2;
+};
 
 inline bool MinDbl(double a, double b)
 {
@@ -37,31 +43,20 @@ inline double ToDegrees(double angleInRadians)
 	return (angleInRadians * 180.0) / AL_PI;
 }
 
-inline Vec4 LinePlaneCollision(const Vec4& p1, const Vec4& p2, double A, double B, double C, double D)
-{
-	Vec4 result;
-	Vec4 diff(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
-	double numerator = A * p1[0] + B * p1[1] + C * p1[2] + D;
-	double denominator = A * diff[0] + B * diff[1] + C * diff[2];
-	for (int i = 0; i < 3; i++)
-		result[i] = p1[i] - (diff[i] * numerator) / denominator;
-	return result;
-}
-
-inline bool LineLineIntersection(const std::vector< std::vector<int> >& lineA,
-	const std::vector< std::vector<int> >& lineB)
+inline bool LineLineIntersection(const Vec4Line& lineA,
+	const Vec4Line& lineB)
 {
 	// Poly points
-	double x1 = lineA[0][0];
-	double y1 = lineA[0][1];
-	double x2 = lineA[1][0];
-	double y2 = lineA[1][1];
+	double x1 = lineA.P1[0];
+	double y1 = lineA.P1[1];
+	double x2 = lineA.P2[0];
+	double y2 = lineA.P2[1];
 
 	// Semi infinite line points
-	double x3 = lineB[0][0];
-	double y3 = lineB[0][1];
-	double x4 = lineB[1][0];
-	double y4 = lineB[1][1];
+	double x3 = lineB.P1[0];
+	double y3 = lineB.P1[1];
+	double x4 = lineB.P2[0];
+	double y4 = lineB.P2[1];
 
 	double slope1 = (y2 - y1) / (x2 - x1);
 	double slope2 = (y4 - y3) / (x4 - x3);
@@ -90,23 +85,16 @@ inline bool LineLineIntersection(const std::vector< std::vector<int> >& lineA,
 	return false;
 }
 
-inline bool PointPolyIntersection(const std::vector<int>& point, const std::vector< std::vector<int> >& poly)
+inline bool PointPolyIntersection(const std::vector<double>& point, const std::vector<Vec4Line>& poly)
 {
 	int counter = 0;
 	for (unsigned int i = 0; i < poly.size(); i++)
 	{
-		std::vector< std::vector<int> > line_x;
-		line_x.push_back(point);
-		std::vector<int> point_far;
-		point_far.push_back(100000);
-		point_far.push_back(point[1]);
-		line_x.push_back(point_far);
-
-		std::vector< std::vector<int> > edge;
-		edge.push_back(poly[i]);
-		edge.push_back(poly[(i + 1) % poly.size()]);
+		Vec4Line line_x;
+		line_x.P1 = Vec4(point[0], point[1], 0.0);
+		line_x.P2 = Vec4(100000.0, point[1], 0.0);
 		
-		if (LineLineIntersection(edge, line_x))
+		if (LineLineIntersection(poly[i], line_x))
 			counter++;
 	}
 	

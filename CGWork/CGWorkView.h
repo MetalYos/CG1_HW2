@@ -71,12 +71,15 @@ private:
 	bool isBBoxOn;
 	// Color dialog flag
 	bool isCColorDialogOpen;
-	// Mouse click bool
+	
+	// Mouse parameters
 	bool mouseClicked;
 	CPoint prevMousePos;
 	CPoint mouseClickPos;
-	// Normal size factor
+	
+	// Fine tuning parameters
 	double normalSizeFactor;
+	bool showGeoColor;
 
 	// Quick hack
 	std::vector< std::vector<Edge> > selectedPolys;
@@ -87,8 +90,9 @@ private:
 	CPoint TranslateBToFirstOctant(const CPoint& a, const CPoint& b, int oct);
 	CPoint TranslatePointFrom8th(CPoint p, int oct);
 	CPoint TranslatePointTo8th(CPoint p, int oct);
-	void SetSelectedPolys(CPoint mousePos, Poly* p, std::vector< std::vector<int> > poly);
+	void SetSelectedPoly(CPoint mousePos, Poly* p, std::vector<Vec4Line> poly);
 	void DrawSelectedPolys(CDC* pDC);
+	bool IsClippedZ(const Vec4& p1, const Vec4& p2);
 
 	//Dialogs
 	CColorsDialog m_colorDialog; 

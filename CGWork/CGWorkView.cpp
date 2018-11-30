@@ -131,6 +131,7 @@ CCGWorkView::CCGWorkView()
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
 	normalSizeFactor = 0.1;
+	showGeoColor = false;
 }
 
 CCGWorkView::~CCGWorkView()
@@ -302,9 +303,9 @@ CPoint CCGWorkView::TranslatePointTo8th(CPoint p, int oct)
 	return TranslatePointFrom8th(p, oct);
 }
 
-void CCGWorkView::SetSelectedPolys(CPoint mousePos, Poly* p, std::vector< std::vector<int> > poly)
+void CCGWorkView::SetSelectedPoly(CPoint mousePos, Poly* p, std::vector<Vec4Line> poly)
 {
-	std::vector<int> point;
+	std::vector<double> point;
 	point.push_back(mousePos.x);
 	point.push_back(mousePos.y);
 
@@ -325,6 +326,17 @@ void CCGWorkView::DrawSelectedPolys(CDC* pDC)
 		DrawPoly(pDC, poly);
 	}
 	selectedPolys.clear();
+}
+
+bool CCGWorkView::IsClippedZ(const Vec4 & p1, const Vec4 & p2)
+{
+	// Basic Z clipping
+	if ((p1[2] < -1.0 && p2[2] < -1.0) ||
+		(p1[2] > 1.0 && p2[2] > 1.0))
+	{
+		return true;
+	}
+	return false;
 }
 
 int CCGWorkView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
@@ -484,50 +496,53 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		Mat4 normalTransform = model->GetNormalTransform();
 		COLORREF color = isCColorDialogOpen ? m_colorDialog.WireframeColor :
 			RGB(model->GetColor()[0], model->GetColor()[1], model->GetColor()[2]);
-		COLORREF selectedColor = RGB((BYTE)(model->GetColor()[0] + 128) % 256,
-			(BYTE)(model->GetColor()[1] + 128) % 256, (BYTE)(model->GetColor()[2] + 128) % 256);
 		COLORREF normalColor = isCColorDialogOpen ? m_colorDialog.NormalColor :
 			RGB(model->GetNormalColor()[0], model->GetNormalColor()[1], model->GetNormalColor()[2]);
 		for (Geometry* geo : model->GetGeometries())
 		{
+			color = (!showGeoColor) ? color :
+				RGB((BYTE)geo->Color[0], (BYTE)geo->Color[1], (BYTE)geo->Color[2]);
+			COLORREF selectedColor = RGB((BYTE)(255.0 - model->GetColor()[0]),
+				(BYTE)(255.0 - model->GetColor()[1]), (BYTE)(255.0 - model->GetColor()[2]));
 			// Draw Polys
 			std::vector<Poly*> polygons = geo->Polygons;
 			for (Poly* p : polygons)
 			{
 				std::vector<Edge> poly;
+				std::vector<Vec4Line> polyEdges;
 				Vec4 polyCenter;
 				for (unsigned int i = 0; i < p->Vertices.size(); i++)
 				{
-					// Add edge to poly struct
+					// Save vertices in object space
 					Vec4 pos1 = p->Vertices[i]->Pos;
 					Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
 					polyCenter += pos1;
 
-					Vec4 temp = pos1 * transform * camTransform;
-
+					// Transform vertices from object space to normalized device coords
 					Vec4 clipped1 = pos1 * transform * camTransform * projection;
 					Vec4 clipped2 = pos2 * transform * camTransform * projection;
 
+					// Divide by W
 					clipped1 /= clipped1[3];
 					clipped2 /= clipped2[3];
 
 					// Basic Z clipping
-					if ((clipped1[2] < -1.0 && clipped2[2] < -1.0) ||
-						(clipped1[2] > 1.0 && clipped2[2] > 1.0))
-					{
+					if (IsClippedZ(clipped1, clipped2))
 						continue;
-					}
 
+					// Transform from NDC to screen space
 					Vec4 pix1Vec(clipped1 * toView);
 					Vec4 pix2Vec(clipped2 * toView);
 
 					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
 					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
 
-					if (m_colorDialog.IsDiscoMode) {
-						color = AL_RAINBOW_CREF;
-					}
+					// Contruct poly for mouse selection test
+					polyEdges.push_back({ pix1Vec, pix2Vec });
 
+					// Construct poly for drawing
+					if (m_colorDialog.IsDiscoMode)
+						color = AL_RAINBOW_CREF;
 					poly.push_back({ pix1, pix2 , color });
 
 					// Draw vertex normal if needed
@@ -546,21 +561,12 @@ void CCGWorkView::OnDraw(CDC* pDC)
 						DrawLine(pDCToUse, normalColor, pix1, nPix2);
 					}
 				}
+				// Calculate poly center
 				polyCenter /= p->Vertices.size();
 
 				// If mouse button was clicked in Select mode perform intersection caculation
 				if (mouseClicked)
-				{
-					std::vector< std::vector<int> > polyInts;
-					for (unsigned int k = 0; k < poly.size(); k++)
-					{
-						std::vector<int> temp;
-						temp.push_back(poly[k].a.x);
-						temp.push_back(poly[k].a.y);
-						polyInts.push_back(temp);
-					}
-					SetSelectedPolys(mouseClickPos, p, polyInts);
-				}
+					SetSelectedPoly(mouseClickPos, p, polyEdges);
 
 				// If the poly was selected, save it in the selectedPolys list
 				if (p->IsSelected)
@@ -581,13 +587,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					polyCenter /= polyCenter[3];
 					
 					// Basic Z clipping
-					if (camera->IsPerspective())
-					{
-						if (polyCenter[2] < -1.0 && polyCenter[2] > 1.0)
-						{
-							continue;
-						}
-					}
+					if (IsClippedZ(polyCenter, polyCenter))
+						continue;
 
 					normal = polyCenter + normal * normalSizeFactor;
 
@@ -600,11 +601,10 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					DrawLine(pDCToUse, normalColor, polyCenterPix, polyNormPix);
 				}
 			}
-
-			// Reset mouseclicked flag
-			mouseClicked = false;
 		}
-
+		// Reset mouseclicked flag
+		mouseClicked = false;
+		// Draw the selected polys in the end to make sure they are on top
 		DrawSelectedPolys(pDCToUse);
 
 		// Draw Bounding Box
@@ -626,14 +626,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					clipped2 /= clipped2[3];
 
 					// Basic Z clipping
-					if (camera->IsPerspective())
-					{
-						if ((clipped1[2] < -1.0 && clipped2[2] < -1.0) ||
-							(clipped1[2] > 1.0 && clipped2[2] > 1.0))
-						{
-							continue;
-						}
-					}
+					if (IsClippedZ(clipped1, clipped2))
+						continue;
 
 					Vec4 pix1Vec(clipped1 * toView);
 					Vec4 pix2Vec(clipped2 * toView);
@@ -653,8 +647,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 	{
 		m_pDC->BitBlt(r.left, r.top, r.Width(), r.Height(), pDCToUse, r.left, r.top, SRCCOPY);
 	}
-	
-	theta += 5;	
 }
 
 
@@ -1195,7 +1187,7 @@ void CCGWorkView::OnOptionsPerspectivecontrol()
 		{
 			camera->SetPerspective(pParams.Left, pParams.Right, pParams.Top, pParams.Bottom,
 				m_perspDialog.NearPlane, m_perspDialog.FarPlane);
-			camera->SwitchProjection(camera->IsPerspective());
+			camera->SwitchProjection(m_bIsPerspective);
 
 			Invalidate();
 		}
@@ -1222,6 +1214,9 @@ void CCGWorkView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 			}
 		}
 	}
+
+	if (nChar == 0x47) // G key
+		showGeoColor = !showGeoColor;
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }

@@ -53,10 +53,11 @@ public:
 	std::vector<Poly*> Polygons;
 	Vec4 MinCoord;
 	Vec4 MaxCoord;
+	Vec4 Color;
 
 public:
-	Geometry() { }
-	~Geometry(); // TODO: complete
+	Geometry() : Color(AL_WHITE) { }
+	~Geometry();
 
 	void AddVertex(Vertex* v);
 	void AddPolygon(Poly* p);
