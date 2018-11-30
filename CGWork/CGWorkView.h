@@ -190,6 +190,7 @@ public:
 	afx_msg void OnOptionsPerspectivecontrol();
 	afx_msg void OnActionSelect();
 	afx_msg void OnUpdateActionSelect(CCmdUI *pCmdUI);
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
 
 #ifndef _DEBUG  // debug version in CGWorkView.cpp

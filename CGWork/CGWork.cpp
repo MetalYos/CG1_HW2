@@ -113,6 +113,7 @@ protected:
 public:
 
 //	afx_msg void OnOptionsMousesensitivity();
+//	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -132,6 +133,7 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	//{{AFX_MSG_MAP(CAboutDlg)
 	//}}AFX_MSG_MAP
 //ON_COMMAND(ID_OPTIONS_MOUSESENSITIVITY, &CAboutDlg::OnOptionsMousesensitivity)
+//ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // App command to run the dialog

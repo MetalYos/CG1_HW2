@@ -87,6 +87,7 @@ BEGIN_MESSAGE_MAP(CCGWorkView, CView)
 	ON_COMMAND(ID_OPTIONS_PERSPECTIVECONTROL, &CCGWorkView::OnOptionsPerspectivecontrol)
 	ON_COMMAND(ID_ACTION_SELECT, &CCGWorkView::OnActionSelect)
 	ON_UPDATE_COMMAND_UI(ID_ACTION_SELECT, &CCGWorkView::OnUpdateActionSelect)
+	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
 // A patch to fix GLaux disappearance from VS2005 to VS2008
@@ -465,7 +466,6 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 	COLORREF bGColorRef = m_colorDialog.BackgroundColor;
 	pDCToUse->FillSolidRect(&r, bGColorRef);
-
 	
 	std::vector<Model*> models = Scene::GetInstance().GetModels();
 	Camera* camera = Scene::GetInstance().GetCamera();
@@ -1200,4 +1200,28 @@ void CCGWorkView::OnOptionsPerspectivecontrol()
 			Invalidate();
 		}
 	}
+}
+
+
+void CCGWorkView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	if (Scene::GetInstance().GetModels().size() > 0)
+	{
+		if (Scene::GetInstance().ArePolyNormalsOn() ||
+			Scene::GetInstance().AreVertexNormalsOn())
+		{
+			if (nChar == VK_DOWN)
+			{
+				normalSizeFactor -= 0.01;
+				if (normalSizeFactor < 0.01)
+					normalSizeFactor = 0.01;
+			}
+			if (nChar == VK_UP)
+			{
+				normalSizeFactor += 0.01;
+			}
+		}
+	}
+
+	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }
