@@ -40,18 +40,12 @@ private:
 	Mat4 projection;
 
 	Mat4 perspective;
-	Mat4 perspectiveInv;
 	Mat4 orthographic;
-	Mat4 orthographicInv;
 	bool isPerspective;
 
 	CameraParameters camParams;
 	PerspectiveParams perspectiveParams;
 	OrthographicParams orthographicParams;
-
-private:
-	void calculatePerspectiveInverse();
-	void calculateOrthographicInverse();
 
 public:
 	Camera();
@@ -67,7 +61,6 @@ public:
 	void SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far);
 	void SetPerspective(double fovy, double aspectR, double z_near, double z_far);
 	Mat4 GetProjection() const;
-	Mat4 GetProjectionInverse() const;
 
 	const CameraParameters& GetCameraParameters() const;
 	const PerspectiveParams& GetPerspectiveParameters() const;

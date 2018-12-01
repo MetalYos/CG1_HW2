@@ -707,16 +707,6 @@ void CCGWorkView::OnFileLoad()
 		Vec4 bboxDim = model->GetBBoxDimensions();
 		double maxDim = max(max(bboxDim[0], bboxDim[1]), bboxDim[2]);
 
-		// Set Perspective projection
-		camera->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
-
-		// Set orthographic projection dimensions
-		double orthoOffset = 0.5;
-		camera->SetOrthographic(abs(maxDim) + orthoOffset, m_AspectRatio, 1.0, 1000.0);
-
-		// Switch camera to the correct projection (the one that is selected)
-		camera->SwitchProjection(m_bIsPerspective);
-		
 		// Set Camera position
 		double radius = maxDim / 2.0;
 		double f = tan(ToRadians(camera->GetPerspectiveParameters().FOV / 2.0));
@@ -730,6 +720,17 @@ void CCGWorkView::OnFileLoad()
 		Vec4 bboxCenter = model->GetBBoxCenter();
 		camera->LookAt(bboxCenter - Vec4(0.0, 0.0, zPos), bboxCenter, Vec4(0.0, -1.0, 0.0));
 
+		// Set Perspective projection
+		camera->SetPerspective(45.0, m_AspectRatio, floor( abs(zPos) - radius), ceil(abs(zPos) + radius));
+
+		// Set orthographic projection dimensions
+		double orthoOffset = 0.5;
+		orthoHeight = abs(maxDim) + orthoOffset;
+		camera->SetOrthographic(orthoHeight, m_AspectRatio, 1.0, 1000.0);
+
+		// Switch camera to the correct projection (the one that is selected)
+		camera->SwitchProjection(m_bIsPerspective);
+		
 		// Set ColorDialog model color
 		m_colorDialog.WireframeColor = RGB(model->GetColor()[0], model->GetColor()[1], model->GetColor()[2]);
 

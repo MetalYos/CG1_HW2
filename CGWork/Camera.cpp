@@ -1,50 +1,5 @@
 #include "Camera.h"
 
-void Camera::calculatePerspectiveInverse()
-{
-	double right = perspectiveParams.Right;
-	double left = perspectiveParams.Left;
-	double top = perspectiveParams.Top;
-	double bottom = perspectiveParams.Bottom;
-	double near = perspectiveParams.Near;
-	double far = perspectiveParams.Far;
-
-	Mat4 result;
-	result[0][0] = (right - left) / 2.0 * near;
-	result[0][3] = (right + left) / 2.0 * near;
-	result[1][1] = (top - bottom) / 2.0 * near;
-	result[1][3] = (top + bottom) / 2.0 * near;
-	result[2][2] = 0.0;
-	result[2][3] = -1.0;
-	result[3][2] = -(far - near) / 2 * far * near;
-	result[3][3] = (far + near) / 2 * far * near;
-	result.Transpose();
-
-	perspectiveInv = result;
-}
-
-void Camera::calculateOrthographicInverse()
-{
-	double right = orthographicParams.Right;
-	double left = orthographicParams.Left;
-	double top = orthographicParams.Top;
-	double bottom = orthographicParams.Bottom;
-	double near = orthographicParams.Near;
-	double far = orthographicParams.Far;
-
-	Mat4 result;
-	result[0][0] = (right - left) / 2.0;
-	result[1][1] = (top - bottom) / 2.0;
-	result[2][2] = (far - near) / -2.0;
-	result[0][3] = (right + left) / 2.0;
-	result[1][3] = (top + bottom) / 2.0;
-	result[2][3] = -(near + far) / 2.0;
-	result[3][3] = 1.0;
-	result.Transpose();
-
-	orthographicInv = result;
-}
-
 Camera::Camera() : isPerspective(false)
 {
 }
@@ -107,8 +62,6 @@ void Camera::SetOrthographic(double left, double right, double top, double botto
 	orthographicParams.Bottom = bottom;
 	orthographicParams.Near = z_near;
 	orthographicParams.Far = z_far;
-
-	calculateOrthographicInverse();
 }
 
 void Camera::SetOrthographic(double height, double aspectR, double z_near, double z_far)
@@ -141,8 +94,6 @@ void Camera::SetPerspective(double left, double right, double top, double bottom
 	perspectiveParams.Near = z_near;
 	perspectiveParams.Far = z_far;
 	perspectiveParams.FOV = ToDegrees(atan(top / z_near)) * 2.0;
-
-	calculatePerspectiveInverse();
 }
 
 void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z_far)
@@ -160,11 +111,6 @@ void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z
 Mat4 Camera::GetProjection() const
 {
 	return projection;
-}
-
-Mat4 Camera::GetProjectionInverse() const
-{
-	return (isPerspective) ? perspectiveInv : orthographicInv;
 }
 
 const CameraParameters & Camera::GetCameraParameters() const
