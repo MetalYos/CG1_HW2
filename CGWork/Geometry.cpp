@@ -62,3 +62,65 @@ void Geometry::CalculateVerticesNormals()
 			v->CalcNormal = Vec4::Normalize3(avg);
 	}
 }
+
+void Geometry::BuildBoundingBox()
+{
+	Vec4 a(MinCoord[0], MaxCoord[1], MaxCoord[2]);
+	Vec4 b(MinCoord[0], MinCoord[1], MaxCoord[2]);
+	Vec4 c(MaxCoord[0], MinCoord[1], MaxCoord[2]);
+	Vec4 d(MaxCoord[0], MaxCoord[1], MaxCoord[2]);
+	Vec4 e(MinCoord[0], MaxCoord[1], MinCoord[2]);
+	Vec4 f(MinCoord[0], MinCoord[1], MinCoord[2]);
+	Vec4 g(MaxCoord[0], MinCoord[1], MinCoord[2]);
+	Vec4 h(MaxCoord[0], MaxCoord[1], MinCoord[2]);
+
+	// Top Polygon
+	Poly* top = new Poly();
+	top->Vertices.push_back(new Vertex(a));
+	top->Vertices.push_back(new Vertex(b));
+	top->Vertices.push_back(new Vertex(c));
+	top->Vertices.push_back(new Vertex(d));
+
+	// Left Polygon
+	Poly* left = new Poly();
+	left->Vertices.push_back(new Vertex(b));
+	left->Vertices.push_back(new Vertex(f));
+	left->Vertices.push_back(new Vertex(g));
+	left->Vertices.push_back(new Vertex(c));
+
+	// Right Polygon
+	Poly* right = new Poly();
+	right->Vertices.push_back(new Vertex(a));
+	right->Vertices.push_back(new Vertex(e));
+	right->Vertices.push_back(new Vertex(h));
+	right->Vertices.push_back(new Vertex(d));
+
+	// Front Polygon
+	Poly* front = new Poly();
+	front->Vertices.push_back(new Vertex(b));
+	front->Vertices.push_back(new Vertex(a));
+	front->Vertices.push_back(new Vertex(e));
+	front->Vertices.push_back(new Vertex(f));
+
+	// Back Polygon
+	Poly* back = new Poly();
+	back->Vertices.push_back(new Vertex(c));
+	back->Vertices.push_back(new Vertex(d));
+	back->Vertices.push_back(new Vertex(h));
+	back->Vertices.push_back(new Vertex(g));
+
+	// Bottom Polygon
+	Poly* bottom = new Poly();
+	bottom->Vertices.push_back(new Vertex(e));
+	bottom->Vertices.push_back(new Vertex(h));
+	bottom->Vertices.push_back(new Vertex(g));
+	bottom->Vertices.push_back(new Vertex(f));
+
+	// Add polygons to bbox
+	BBox.push_back(top);
+	BBox.push_back(left);
+	BBox.push_back(right);
+	BBox.push_back(front);
+	BBox.push_back(back);
+	BBox.push_back(bottom);
+}

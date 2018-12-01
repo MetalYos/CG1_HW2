@@ -79,7 +79,7 @@ private:
 	
 	// Fine tuning parameters
 	double normalSizeFactor;
-	bool showGeoColor;
+	bool showGeos;
 	bool aroundEye;
 
 	// Quick hack
@@ -93,6 +93,8 @@ private:
 	CPoint TranslatePointTo8th(CPoint p, int oct);
 	void SetSelectedPoly(CPoint mousePos, Poly* p, std::vector<Vec4Line> poly);
 	void DrawSelectedPolys(CDC* pDC);
+	void DrawBoundingBox(CDC* pDC, const std::vector<Poly*>& polys, const Mat4& modelTransform,
+		const Mat4& camTransform, const Mat4& projection, const Mat4& toView, COLORREF color);
 	bool IsClippedZ(const Vec4& p1, const Vec4& p2);
 
 	//Dialogs

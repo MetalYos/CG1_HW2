@@ -133,7 +133,7 @@ CCGWorkView::CCGWorkView()
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
 	normalSizeFactor = 0.1;
-	showGeoColor = false;
+	showGeos = true;
 	aroundEye = true;
 }
 
@@ -331,6 +331,39 @@ void CCGWorkView::DrawSelectedPolys(CDC* pDC)
 	selectedPolys.clear();
 }
 
+void CCGWorkView::DrawBoundingBox(CDC * pDC, const std::vector<Poly*>& polys, const Mat4 & modelTransform, const Mat4 & camTransform, const Mat4 & projection, const Mat4 & toView, COLORREF color)
+{
+	for (Poly* p : polys)
+	{
+		std::vector<Edge> poly;
+		for (unsigned int i = 0; i < p->Vertices.size(); i++)
+		{
+			Vec4 pos1 = p->Vertices[i]->Pos;
+			Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
+
+			Vec4 clipped1 = pos1 * modelTransform * camTransform * projection;
+			Vec4 clipped2 = pos2 * modelTransform * camTransform * projection;
+
+			clipped1 /= clipped1[3];
+			clipped2 /= clipped2[3];
+
+			// Basic Z clipping
+			if (IsClippedZ(clipped1, clipped2))
+				continue;
+
+			Vec4 pix1Vec(clipped1 * toView);
+			Vec4 pix2Vec(clipped2 * toView);
+
+			CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
+			CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
+
+			poly.push_back({ pix1, pix2 , color });
+		}
+
+		DrawPoly(pDC, poly);
+	}
+}
+
 bool CCGWorkView::IsClippedZ(const Vec4 & p1, const Vec4 & p2)
 {
 	// Basic Z clipping (deactivated for now)
@@ -505,7 +538,7 @@ void CCGWorkView::OnDraw(CDC* pDC)
 			RGB(model->GetNormalColor()[0], model->GetNormalColor()[1], model->GetNormalColor()[2]);
 		for (Geometry* geo : model->GetGeometries())
 		{
-			color = (!showGeoColor) ? color :
+			color = (!showGeos) ? color :
 				RGB((BYTE)geo->Color[0], (BYTE)geo->Color[1], (BYTE)geo->Color[2]);
 			COLORREF selectedColor = RGB((BYTE)(255.0 - model->GetColor()[0]),
 				(BYTE)(255.0 - model->GetColor()[1]), (BYTE)(255.0 - model->GetColor()[2]));
@@ -606,45 +639,22 @@ void CCGWorkView::OnDraw(CDC* pDC)
 					DrawLine(pDCToUse, normalColor, polyCenterPix, polyNormPix);
 				}
 			}
+
+			// Draw Geo Bounding Box if needed
+			if (Scene::GetInstance().GetBBoxState() && showGeos)
+			{
+				DrawBoundingBox(pDCToUse, geo->BBox, transform, camTransform, projection, toView, color);
+			}
 		}
 		// Reset mouseclicked flag
 		mouseClicked = false;
 		// Draw the selected polys in the end to make sure they are on top
 		DrawSelectedPolys(pDCToUse);
 
-		// Draw Bounding Box
-		if (Scene::GetInstance().GetBBoxState())
+		// Draw Bounding Box if needed
+		if (Scene::GetInstance().GetBBoxState() && !showGeos)
 		{
-			std::vector<Poly*> polygons = model->GetBBox();
-			for (Poly* p : polygons)
-			{
-				std::vector<Edge> poly;
-				for (unsigned int i = 0; i < p->Vertices.size(); i++)
-				{
-					Vec4 pos1 = p->Vertices[i]->Pos;
-					Vec4 pos2 = p->Vertices[(i + 1) % p->Vertices.size()]->Pos;
-
-					Vec4 clipped1 = pos1 * transform * camTransform * projection;
-					Vec4 clipped2 = pos2 * transform * camTransform * projection;
-
-					clipped1 /= clipped1[3];
-					clipped2 /= clipped2[3];
-
-					// Basic Z clipping
-					if (IsClippedZ(clipped1, clipped2))
-						continue;
-
-					Vec4 pix1Vec(clipped1 * toView);
-					Vec4 pix2Vec(clipped2 * toView);
-
-					CPoint pix1((int)pix1Vec[0], (int)pix1Vec[1]);
-					CPoint pix2((int)pix2Vec[0], (int)pix2Vec[1]);
-
-					poly.push_back({ pix1, pix2 , color });
-				}
-
-				DrawPoly(pDCToUse, poly);
-			}
+			DrawBoundingBox(pDCToUse, model->GetBBox(), transform, camTransform, projection, toView, color);
 		}
 	}
 
@@ -1124,6 +1134,7 @@ void CCGWorkView::OnButtonColors()
 			model->SetNormalColor(normColor);
 
 			isCColorDialogOpen = false;
+			showGeos = false;
 		}
 
 		Invalidate();
@@ -1147,15 +1158,19 @@ void CCGWorkView::OnOptionsTessellationtolerance()
 	{
 		// Save fineness in Scene
 		Scene::GetInstance().SetFineNess(m_resolutionDialog.Resolution);
-		// Delete previous models
-		Scene::GetInstance().GetInstance().GetModels().back()->DeleteGeometries();
-		// Load model from file
-		PngWrapper p;
-		CGSkelProcessIritDataFiles(m_strItdFileName, 1);
-		// Build Building Box
-		Scene::GetInstance().GetModels().back()->BuildBoundingBox();
 
-		Invalidate();
+		if (Scene::GetInstance().GetModels().size() > 0)
+		{
+			// Delete previous models
+			Scene::GetInstance().GetInstance().GetModels().back()->DeleteGeometries();
+			// Load model from file
+			PngWrapper p;
+			CGSkelProcessIritDataFiles(m_strItdFileName, 1);
+			// Build Building Box
+			Scene::GetInstance().GetModels().back()->BuildBoundingBox();
+
+			Invalidate();
+		}
 	}
 }
 
@@ -1231,7 +1246,7 @@ void CCGWorkView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	}
 
 	if (nChar == 0x47) // G key
-		showGeoColor = !showGeoColor;
+		showGeos = !showGeos;
 	if (nChar == 0x45) // E key
 		aroundEye = !aroundEye;
 

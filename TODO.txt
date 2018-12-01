@@ -2,14 +2,15 @@ Todo List:
 
 -----------------------TODO----------------------------------
 1. Comment the hell out of the code.
-3. Add a button to control if Rot/Scale in View space is around camera or object.
 6. Add renderer class and abstract some of the functions in CGView to it - lowest of low priorities.
 
 
 
 
 -----------------------DONE--------------------------------
-5. Save color in Geometry as well and add a button to see color per geo or of the whole model.
+2. Maybe add an option to see BBox for each geo (can enable/disable using the G key as well).
+3. Add a button to control if Rot/Scale in View space is around camera or object (E key).
+5. Save color in Geometry as well and add a button to see color per geo or of the whole model (G key).
 2. Change it so the tessellation parameter is from view (in case it is not allowed to change a signature of a function from irit).
 4. Add a way to control normal size factor with up and down keys.
 17. Advanced options - for now the second option - Together.

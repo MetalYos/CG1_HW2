@@ -141,7 +141,7 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 		/* color code */
 		color[0] = RGB[0] * 255.0;
 		color[1] = RGB[1] * 255.0;
-		color[2] = RGB[3] * 255.0;
+		color[2] = RGB[2] * 255.0;
 		geo->Color = color;
 	}
 	if (CGSkelGetObjectTransp(PObj, &Transp))
@@ -249,6 +249,7 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 	}
 	/* Close the object. */
 	geo->CalculateVerticesNormals();
+	geo->BuildBoundingBox();
 	
 	// Add model to scene
 	Scene::GetInstance().GetModels().back()->AddGeometry(geo);

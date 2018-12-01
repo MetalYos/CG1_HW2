@@ -51,9 +51,13 @@ class Geometry
 public:
 	std::unordered_map<Vec4, Vertex*, Vec4Hash, Vec4Comparer> Vertices;
 	std::vector<Poly*> Polygons;
+
+	Vec4 Color;
+
+	// BBox parameters
+	std::vector<Poly*> BBox;
 	Vec4 MinCoord;
 	Vec4 MaxCoord;
-	Vec4 Color;
 
 public:
 	Geometry() : Color(AL_WHITE) { }
@@ -62,5 +66,7 @@ public:
 	void AddVertex(Vertex* v);
 	void AddPolygon(Poly* p);
 	void CalculateVerticesNormals();
+
+	void BuildBoundingBox();
 };
 
