@@ -230,8 +230,14 @@ bool CGSkelStoreData(IPObjectStruct *PObj)
 				Vec4 v = p->Vertices[1]->Pos;
 				Vec4 w = p->Vertices[2]->Pos;
 
-				p->CalcNormal = Vec4::Normalize3(Vec4::Cross(u - v, v - w));
-				p->CalcNormal[3] = 0.0;
+				Vec4 norm = Vec4::Cross(u - v, v - w);
+				if (Vec4::Length3(norm) < AL_DBL_EPSILON)
+					p->CalcNormal = p->Normal;
+				else
+				{
+					p->CalcNormal = Vec4::Normalize3(norm);
+					p->CalcNormal[3] = 0.0;
+				}
 			}
 			else
 			{

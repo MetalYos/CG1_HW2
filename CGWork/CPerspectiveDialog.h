@@ -11,8 +11,8 @@ public:
 	CPerspectiveDialog(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CPerspectiveDialog();
 
-	double NearPlane;
-	double FarPlane;
+	double ProjPlane;
+	double FOV;
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME

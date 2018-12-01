@@ -24,10 +24,10 @@ CPerspectiveDialog::~CPerspectiveDialog()
 void CPerspectiveDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	DDX_Text(pDX, IDC_EDIT_NEAR, NearPlane);
-	DDV_MinMaxDouble(pDX, NearPlane, 0.001, FarPlane);
-	DDX_Text(pDX, IDC_EDIT_FAR, FarPlane);
-	DDV_MinMaxDouble(pDX, FarPlane, NearPlane, 10000.0);
+	DDX_Text(pDX, IDC_EDIT_NEAR, ProjPlane);
+	DDV_MinMaxDouble(pDX, ProjPlane, 0.001, 10000.0);
+	DDX_Text(pDX, IDC_EDIT_FAR, FOV);
+	DDV_MinMaxDouble(pDX, FOV, 5.0, 180.0);
 }
 
 

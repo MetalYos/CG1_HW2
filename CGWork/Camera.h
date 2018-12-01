@@ -60,6 +60,7 @@ public:
 	void SetOrthographic(double height, double aspectR, double z_near, double z_far);
 	void SetPerspective(double left, double right, double top, double bottom, double z_near, double z_far);
 	void SetPerspective(double fovy, double aspectR, double z_near, double z_far);
+	void SetPerspective2(double fovy, double aspectR, double alpha, double d);
 	Mat4 GetProjection() const;
 
 	const CameraParameters& GetCameraParameters() const;

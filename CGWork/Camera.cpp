@@ -108,6 +108,34 @@ void Camera::SetPerspective(double fovy, double aspectR, double z_near, double z
 	perspectiveParams.AspectRatio = aspectR;
 }
 
+void Camera::SetPerspective2(double fovy, double aspectR, double alpha, double d)
+{
+	double f = tan(ToRadians(fovy / 2.0));
+
+	// Set the perspective warp matrix as seen in lecture (added support for FOV and aspect ratio)
+	Mat4 result;
+	result[0][0] = 1.0 / (f * aspectR);
+	result[1][1] = 1.0 / f;
+	result[2][2] = -d / (d - alpha);
+	result[2][3] = -1.0 / d;
+	result[3][2] = -alpha * d / (d - alpha);
+	result[3][3] = 0.0;
+
+	// Moves the box so it's center in z axis will be at 0 
+	result = result * Mat4::Translate(0.0, 0.0, -d / 2.0);
+	// Scales the box so it's size in z axis is 2.0
+	result = result * Mat4::Scale(1.0, 1.0, 2.0 / d);
+
+	projection = result;
+	perspective = result;
+	isPerspective = true;
+
+	perspectiveParams.Near = alpha;
+	perspectiveParams.Far = d;
+	perspectiveParams.FOV = fovy;
+	perspectiveParams.AspectRatio = aspectR;
+}
+
 Mat4 Camera::GetProjection() const
 {
 	return projection;

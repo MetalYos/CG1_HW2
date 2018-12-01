@@ -51,10 +51,14 @@ void Geometry::CalculateVerticesNormals()
 		Vec4 avg;
 		for (Poly* p : v->Polys)
 		{
-			avg += p->Normal;
+			avg += p->CalcNormal;
 		}
 		avg /= v->Polys.size();
 		avg[3] = 0.0;
-		v->CalcNormal = Vec4::Normalize3(avg);
+
+		if (abs(avg[0]) < AL_DBL_EPSILON && abs(avg[1]) < AL_DBL_EPSILON && abs(avg[2]) < AL_DBL_EPSILON)
+			v->CalcNormal = v->Polys.back()->CalcNormal;
+		else
+			v->CalcNormal = Vec4::Normalize3(avg);
 	}
 }

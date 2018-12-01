@@ -31,6 +31,8 @@ static char THIS_FILE[] = __FILE__;
 // Use this macro to display text messages in the status bar.
 #define STATUS_BAR_TEXT(str) (((CMainFrame*)GetParentFrame())->getStatusBar().SetWindowText(str))
 
+#define D_PERSP // activates Perspective with d param
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CCGWorkView
@@ -127,11 +129,12 @@ CCGWorkView::CCGWorkView()
 	isBBoxOn = false;
 	isCColorDialogOpen = false;
 	mouseClicked = false;
-	m_sensitivity = Vec4(100, 150, 300);
+	m_sensitivity = Vec4(100, 100, 300);
 	orthoHeight = 5.0;
 	m_nCoordSpace = ID_BUTTON_VIEW;
 	normalSizeFactor = 0.1;
 	showGeoColor = false;
+	aroundEye = true;
 }
 
 CCGWorkView::~CCGWorkView()
@@ -330,11 +333,11 @@ void CCGWorkView::DrawSelectedPolys(CDC* pDC)
 
 bool CCGWorkView::IsClippedZ(const Vec4 & p1, const Vec4 & p2)
 {
-	// Basic Z clipping
+	// Basic Z clipping (deactivated for now)
 	if ((p1[2] < -1.0 && p2[2] < -1.0) ||
 		(p1[2] > 1.0 && p2[2] > 1.0))
 	{
-		return true;
+		return false;
 	}
 	return false;
 }
@@ -367,8 +370,6 @@ BOOL CCGWorkView::InitializeCGWork()
 	SetTimer(1, 1, NULL);
 	m_pDbBitMap = CreateCompatibleBitmap(m_pDC->m_hDC, r.right, r.bottom);	
 	m_pDbDC->SelectObject(m_pDbBitMap);
-
-	//Scene::GetInstance().GetCamera()->LookAt(Vec4(0.0, 0.0, 5.0), Vec4(0.0, 0.0, 1.0), Vec4(0.0, 1.0, 0.0));
 
 	return TRUE;
 }
@@ -405,7 +406,11 @@ void CCGWorkView::OnSize(UINT nType, int cx, int cy)
 	bool isPerspective = camera->IsPerspective();
 	OrthographicParams oParams = camera->GetOrthographicParameters();
 	PerspectiveParams pParams = camera->GetPerspectiveParameters();
+#ifdef D_PERSP
+	camera->SetPerspective2(pParams.FOV, m_AspectRatio, pParams.Near, pParams.Far);
+#else
 	camera->SetPerspective(pParams.FOV, m_AspectRatio, pParams.Near, pParams.Far);
+#endif
 	double width = m_AspectRatio * orthoHeight;
 	Scene::GetInstance().GetCamera()->SetOrthographic(-width / 2.0,
 		width / 2.0, orthoHeight / 2.0, -orthoHeight / 2.0, oParams.Near, oParams.Far);
@@ -470,8 +475,8 @@ void CCGWorkView::OnDraw(CDC* pDC)
 		Scene::GetInstance().GetCamera()->SetOrthographic(orthoHeight, m_AspectRatio, 1, 1000.0);
 
 		// Set Perspective dialog default values
-		m_perspDialog.NearPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Near;
-		m_perspDialog.FarPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Far;
+		m_perspDialog.ProjPlane = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().Near;
+		m_perspDialog.FOV = Scene::GetInstance().GetCamera()->GetPerspectiveParameters().FOV;
 
 		isFirstDraw = false;
 	}
@@ -703,28 +708,32 @@ void CCGWorkView::OnFileLoad()
 		
 		// Build Building Box
 		model->BuildBoundingBox();
-		// Get Bounding Box dimensions
+		// Get Bounding Box location and dimensions
+		Vec4 bboxCenter = model->GetBBoxCenter();
 		Vec4 bboxDim = model->GetBBoxDimensions();
 		double maxDim = max(max(bboxDim[0], bboxDim[1]), bboxDim[2]);
 
 		// Set Camera position
 		double radius = maxDim / 2.0;
-		double f = tan(ToRadians(camera->GetPerspectiveParameters().FOV / 2.0));
-		double offset = 2.0;
+		double f = sin(ToRadians(camera->GetPerspectiveParameters().FOV / 2.0));
+		double offset = 3.0;
 		if (bboxDim[0] > bboxDim[1])
 		{
-			f = tan(ToRadians(m_AspectRatio * camera->GetPerspectiveParameters().FOV / 2.0));
-			offset = 2.5;
+			f = sin(ToRadians(m_AspectRatio * camera->GetPerspectiveParameters().FOV / 2.0));
+			offset = 3.5;
 		}
 		double zPos = abs(radius / f) * offset;
-		Vec4 bboxCenter = model->GetBBoxCenter();
 		camera->LookAt(bboxCenter - Vec4(0.0, 0.0, zPos), bboxCenter, Vec4(0.0, -1.0, 0.0));
 
 		// Set Perspective projection
-		camera->SetPerspective(45.0, m_AspectRatio, floor( abs(zPos) - radius), ceil(abs(zPos) + radius));
+#ifdef D_PERSP
+		camera->SetPerspective2(45.0, m_AspectRatio, 0.1, 2.0);
+#else
+		camera->SetPerspective(45.0, m_AspectRatio, 1.0, 1000.0);
+#endif
 
 		// Set orthographic projection dimensions
-		double orthoOffset = 0.5;
+		double orthoOffset = 1.0;
 		orthoHeight = abs(maxDim) + orthoOffset;
 		camera->SetOrthographic(orthoHeight, m_AspectRatio, 1.0, 1000.0);
 
@@ -974,21 +983,21 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
 					model->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));
 				else
-					camera->Rotate(Mat4::RotateX(dx / m_sensitivity[1]));	
+					camera->Rotate(Mat4::RotateX(-dx / m_sensitivity[1]), aroundEye);
 			}
 			if (m_isAxis_Y)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
 					model->Rotate(Mat4::RotateY(dx / m_sensitivity[1]));
 				else
-					camera->Rotate(Mat4::RotateY(dx / m_sensitivity[1]));
+					camera->Rotate(Mat4::RotateY(-dx / m_sensitivity[1]), aroundEye);
 			}
 			if (m_isAxis_Z)
 			{
 				if (m_nCoordSpace == ID_BUTTON_OBJECT)
 					model->Rotate(Mat4::RotateZ(dx / m_sensitivity[1]));
 				else
-					camera->Rotate(Mat4::RotateZ(dx / m_sensitivity[1]));
+					camera->Rotate(Mat4::RotateZ(-dx / m_sensitivity[1]), aroundEye);
 			}
 		}
 		else if (m_nAction == ID_ACTION_SCALE)
@@ -1004,7 +1013,7 @@ void CCGWorkView::OnMouseMove(UINT nFlags, CPoint point)
 			if (m_nCoordSpace == ID_BUTTON_OBJECT)
 				model->Scale(Mat4::Scale(x_trans, y_trans, z_trans));
 			else
-				camera->Scale(Mat4::Scale(x_trans, y_trans, z_trans));
+				camera->Scale(Mat4::Scale(x_trans, y_trans, z_trans), aroundEye);
 		}
 	}
 
@@ -1179,19 +1188,24 @@ void CCGWorkView::OnOptionsPerspectivecontrol()
 {
 	Camera* camera = Scene::GetInstance().GetCamera();
 	PerspectiveParams pParams = camera->GetPerspectiveParameters();
-	m_perspDialog.NearPlane = pParams.Near;
-	m_perspDialog.FarPlane = pParams.Far;
+#ifdef D_PERSP
+	m_perspDialog.ProjPlane = pParams.Far;
+#else
+	m_perspDialog.ProjPlane = pParams.Near;
+#endif
+	m_perspDialog.FOV = pParams.FOV;
 
 	if (m_perspDialog.DoModal() == IDOK)
 	{
-		if ((m_perspDialog.NearPlane != pParams.Near) || (m_perspDialog.FarPlane != pParams.Far))
-		{
-			camera->SetPerspective(pParams.Left, pParams.Right, pParams.Top, pParams.Bottom,
-				m_perspDialog.NearPlane, m_perspDialog.FarPlane);
-			camera->SwitchProjection(m_bIsPerspective);
+#ifdef D_PERSP
+		camera->SetPerspective2(m_perspDialog.FOV, pParams.AspectRatio, pParams.Near, m_perspDialog.ProjPlane);
+#else
+		camera->SetPerspective(pParams.Left, pParams.Right, pParams.Top, pParams.Bottom,
+			m_perspDialog.ProjPlane, pParams.Far);
+#endif
+		camera->SwitchProjection(m_bIsPerspective);
 
-			Invalidate();
-		}
+		Invalidate();
 	}
 }
 
@@ -1218,6 +1232,8 @@ void CCGWorkView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 	if (nChar == 0x47) // G key
 		showGeoColor = !showGeoColor;
+	if (nChar == 0x45) // E key
+		aroundEye = !aroundEye;
 
 	CView::OnKeyDown(nChar, nRepCnt, nFlags);
 }

@@ -80,6 +80,7 @@ private:
 	// Fine tuning parameters
 	double normalSizeFactor;
 	bool showGeoColor;
+	bool aroundEye;
 
 	// Quick hack
 	std::vector< std::vector<Edge> > selectedPolys;
