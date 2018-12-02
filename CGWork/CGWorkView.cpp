@@ -370,7 +370,11 @@ bool CCGWorkView::IsClippedZ(const Vec4 & p1, const Vec4 & p2)
 	if ((p1[2] < -1.0 && p2[2] < -1.0) ||
 		(p1[2] > 1.0 && p2[2] > 1.0))
 	{
+#ifdef D_PERSP
 		return false;
+#else
+		return true;
+#endif
 	}
 	return false;
 }
@@ -516,6 +520,16 @@ void CCGWorkView::OnDraw(CDC* pDC)
 
 	COLORREF bGColorRef = m_colorDialog.BackgroundColor;
 	pDCToUse->FillSolidRect(&r, bGColorRef);
+
+	/* TOO SLOW! used FillSolidRect instead
+	for (int x = r.left; x < r.right; x++)
+	{
+		for (int y = r.top; y < r.bottom; y++)
+		{
+			pDCToUse->SetPixel(x, y, bGColorRef);
+		}
+	}
+	*/
 	
 	std::vector<Model*> models = Scene::GetInstance().GetModels();
 	Camera* camera = Scene::GetInstance().GetCamera();
@@ -1126,15 +1140,21 @@ void CCGWorkView::OnButtonColors()
 		if (Scene::GetInstance().GetModels().size() > 0)
 		{
 			Model* model = Scene::GetInstance().GetModels().back();
-			Vec4 modelColor(GetRValue(m_colorDialog.WireframeColor), GetGValue(m_colorDialog.WireframeColor),
-				GetBValue(m_colorDialog.WireframeColor));
+			COLORREF oldModelColor = RGB((BYTE)model->GetColor()[0], (BYTE)model->GetColor()[1],
+				(BYTE)model->GetColor()[2]);
 			Vec4 normColor(GetRValue(m_colorDialog.NormalColor), GetGValue(m_colorDialog.NormalColor),
 				GetBValue(m_colorDialog.NormalColor));
-			model->SetColor(modelColor);
+
+			if (oldModelColor != m_colorDialog.WireframeColor)
+			{
+				Vec4 modelColor(GetRValue(m_colorDialog.WireframeColor), GetGValue(m_colorDialog.WireframeColor),
+					GetBValue(m_colorDialog.WireframeColor));
+				model->SetColor(modelColor);
+				showGeos = false;
+			}
 			model->SetNormalColor(normColor);
 
 			isCColorDialogOpen = false;
-			showGeos = false;
 		}
 
 		Invalidate();

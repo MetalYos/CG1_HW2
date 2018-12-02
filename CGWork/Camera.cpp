@@ -122,9 +122,9 @@ void Camera::SetPerspective2(double fovy, double aspectR, double alpha, double d
 	result[3][3] = 0.0;
 
 	// Moves the box so it's center in z axis will be at 0 
-	result = result * Mat4::Translate(0.0, 0.0, -d / 2.0);
+	//result = result * Mat4::Translate(0.0, 0.0, -d / 2.0);
 	// Scales the box so it's size in z axis is 2.0
-	result = result * Mat4::Scale(1.0, 1.0, 2.0 / d);
+	//result = result * Mat4::Scale(1.0, 1.0, 2.0 / d);
 
 	projection = result;
 	perspective = result;

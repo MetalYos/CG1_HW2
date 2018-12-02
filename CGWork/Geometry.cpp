@@ -14,6 +14,14 @@ Geometry::~Geometry()
 	for (auto it = Vertices.begin(); it != Vertices.end(); ++it)
 		delete (*it).second;
 	Vertices.clear();
+
+	// free bounding box vertices
+	while (BBox.size() > 0)
+	{
+		Poly* p = BBox.back();
+		BBox.pop_back();
+		delete p;
+	}
 }
 
 void Geometry::AddVertex(Vertex* v)
